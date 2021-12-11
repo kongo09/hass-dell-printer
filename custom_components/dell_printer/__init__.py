@@ -12,9 +12,6 @@ from homeassistant.helpers.update_coordinator import (
 
 import logging
 
-OPENER_TYPE = 1
-LOCK_TYPE = 0
-
 _LOGGER = logging.getLogger(__name__)
 
 
