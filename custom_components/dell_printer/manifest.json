@@ -3,7 +3,12 @@
   "name": "Dell Printer",
   "documentation": "https://github.com/kongo09/hass-dell-printer",
   "issue_tracker": "https://github.com/kongo09/hass-dell-printer/issues",
-  "dependencies": [],
+  "zeroconf": [
+    {
+      "type": "_http._tcp.local.",
+      "name": "Dell*"
+    }
+  ],
   "codeowners": ["@kongo09"],
   "requirements": [],
   "iot_class": "local_polling",
