@@ -1,4 +1,5 @@
 from homeassistant import config_entries
+from homeassistant.components import zeroconf
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.network import get_url
 from .constants import DOMAIN
@@ -75,6 +76,50 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         })
         return self.async_show_form(
             step_id="user", data_schema=schema, errors=errors
+        )
+
+    async def async_step_zeroconf(self, discovery_info: zeroconf.ZeroconfServiceInfo):
+        """Handle zeroconf discovery."""
+        # Hostname is format: DELLDCCFBB.local.
+        _LOGGER.debug(f"Discovered hostname: {discovery_info.hostname}")
+        _LOGGER.debug(f"Discovered host: {discovery_info.host}")
+        _LOGGER.debug(f"Discovered port: {discovery_info.port}")
+        _LOGGER.debug(f"Discovered type: {discovery_info.type}")
+        _LOGGER.debug(f"Discovered name: {discovery_info.name}")
+
+        # # Do not probe the device if the host is already configured
+        # self._async_abort_entries_match({CONF_HOST: self.host})
+
+        # snmp_engine = get_snmp_engine(self.hass)
+        # model = discovery_info.properties.get("product")
+
+        # try:
+        #     self.brother = Brother(self.host, snmp_engine=snmp_engine, model=model)
+        #     await self.brother.async_update()
+        # except UnsupportedModel:
+        #     return self.async_abort(reason="unsupported_model")
+        # except (ConnectionError, SnmpError):
+        #     return self.async_abort(reason="cannot_connect")
+
+        # # Check if already configured
+        # await self.async_set_unique_id(self.brother.serial.lower())
+        # self._abort_if_unique_id_configured()
+
+        # self.context.update(
+        #     {
+        #         "title_placeholders": {
+        #             "serial_number": self.brother.serial,
+        #             "model": self.brother.model,
+        #         }
+        #     }
+        # )
+        errors = None
+        schema = vol.Schema({
+            vol.Required("address", default=""): cv.string,
+        })
+
+        return self.async_show_form(
+            step_id="zeroconf", data_schema=schema, errors=errors
         )
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
