@@ -3,12 +3,11 @@
   "config": {
     "step": {
       "user": {
-        "title": "New Nuki device",
+        "title": "New Dell printer",
         "data": {
           "name": "Entry name (optional)",
-          "address": "Nuki bridge hostname or IP address",
+          "address": "Printer hostname or IP address",
           "token": "Bridge Api token",
-          "web_token": "Web Api token",
           "hass_url": "Home Assistant internal URL",
           "update_seconds": "State polling interval (seconds)"
         }
@@ -16,15 +15,14 @@
     },
     "error": {
       "invalid_bridge_token": "Error communicating with Nuki bridge",
-      "invalid_web_token": "Error communicating with Nuki Web API",
-      "no_token": "Either Bridge token or Web API token is required",
+      "no_token": "Bridge token is required",
       "no_bridge_url": "Bridge address is required"
     }
   },
   "options": {
     "step": {
       "options": {
-        "title": "Configure Nuki device",
+        "title": "Configure Dell printer",
         "data": {
           "update_seconds": "State polling interval (seconds)"
         }
