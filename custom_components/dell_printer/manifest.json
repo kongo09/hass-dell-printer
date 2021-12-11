@@ -1,0 +1,12 @@
+{
+  "domain": "dell_printer",
+  "name": "Dell Printer",
+  "documentation": "https://github.com/kongo09/hass-dell-printer",
+  "issue_tracker": "https://github.com/kongo09/hass-dell-printer/issues",
+  "dependencies": [],
+  "codeowners": ["@kongo09"],
+  "requirements": [],
+  "iot_class": "local_polling",
+  "config_flow": true,
+  "version": "0.0.1"
+}

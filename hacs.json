@@ -1,5 +1,6 @@
 {
-    "name": "Nuki Lock",
-    "domains": ["lock", "sensor"],
+    "name": "Dell Printer",
+    "iot_class": "Local Polling",
+    "domains": ["sensor"],
     "render_readme": true
 }
