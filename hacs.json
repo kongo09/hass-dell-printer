@@ -1,0 +1,5 @@
+{
+    "name": "Nuki Lock",
+    "domains": ["lock", "sensor"],
+    "render_readme": true
+}
