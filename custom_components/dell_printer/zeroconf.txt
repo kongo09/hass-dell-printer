@@ -1,0 +1,13 @@
+Service Dell C1765nfw Color MFP (DC:CF:BB)._http._tcp.local. of type _http._tcp.local. state changed: ServiceStateChange.Added
+Info from zeroconf.get_service_info: ServiceInfo(type='_http._tcp.local.', name='Dell C1765nfw Color MFP (DC:CF:BB)._http._tcp.local.', addresses=[b'\xc0\xa8\x00\x14'], port=80, weight=0, priority=0, server='DELLDCCFBB.local.', properties={b'ty': b'Dell C1765nfw Color MFP', b'product': b'(Dell C1765nfw Color MFP)', b'adminurl': b'http://DELLDCCFBB.local./)', b'usb_MFG': b'DELL', b'usb_MDL': b'C1765nfw Color MFP', b'usb_CMD': b'HBPL', b'note': b''}, interface_index=None)
+  Addresses: 192.168.0.20:80, fe80::a00:37ff:fedc:cfbb:80, 2a02:8108:28bf:daa0:a00:37ff:fedc:cfbb:80
+  Weight: 0, priority: 0
+  Server: DELLDCCFBB.local.
+  Properties are:
+    b'ty': b'Dell C1765nfw Color MFP'
+    b'product': b'(Dell C1765nfw Color MFP)'
+    b'adminurl': b'http://DELLDCCFBB.local./)'
+    b'usb_MFG': b'DELL'
+    b'usb_MDL': b'C1765nfw Color MFP'
+    b'usb_CMD': b'HBPL'
+    b'note': b''
