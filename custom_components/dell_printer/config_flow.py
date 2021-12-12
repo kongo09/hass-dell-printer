@@ -102,4 +102,10 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug(f"Discovered type: {discovery_info.type}")
         _LOGGER.debug(f"Discovered name: {discovery_info.name}")
 
-        return self.async_abort(reason="zeroconf not finished yet")
+        user_input = {
+            "address": discovery_info.host,
+            "port": discovery_info.port,
+            "name": discovery_info.name
+        }
+
+        return self.async_step_user(self, user_input)
