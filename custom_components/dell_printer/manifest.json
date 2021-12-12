@@ -6,7 +6,7 @@
   "zeroconf": [
     {
       "type": "_http._tcp.local.",
-      "name": "Dell*"
+      "name": "dell*"
     }
   ],
   "codeowners": ["@kongo09"],
