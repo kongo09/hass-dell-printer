@@ -119,7 +119,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("async_step_user will be called")
         return self.async_step_zeroconf_confirm()
 
-    async def async_step_confirm_confirm(self, user_input: Dict[str, Any] = None):
+    async def async_step_zeroconf_confirm(self, user_input: Dict[str, Any] = None):
         # confirm the zeroconf discovered data
         _LOGGER.debug("async_step_confirm called")
 
