@@ -100,9 +100,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             "hass_url": hass_url,
             "update_seconds": POLLING_INTERVAL
         }
-        LOGGER.debug(f"Input: {user_input}")
+        _LOGGER.debug(f"Input: {discovered}")
 
-        await self.async_set_unique_id(user_input.get("name"))
+        await self.async_set_unique_id(discovered.get("name"))
 
         # store the data for the next step
         self.context.update({
