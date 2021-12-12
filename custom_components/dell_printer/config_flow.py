@@ -62,7 +62,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # if there are no errors, we can create a configuration entry
             if not errors:
-                _LOGGER.debug("async_create_entry will be called")
+                _LOGGER.debug("checking if unique id is configured")
+                self._abort_if_unique_id_configured()
+                _LOGGER.debug("no, so async_create_entry will be called")
                 return self.async_create_entry(
                     title=user_input.get("name") or DEFAULT_NAME,
                     data=user_input
@@ -84,30 +86,67 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
     async def async_step_zeroconf(self, discovery_info: Optional[Dict[str, Any]]=None):
+        # process zeroconf data
+        _LOGGER.debug("async_step_zeroconf called")
 
         errors = {}
 
-        """Handle zeroconf discovery."""
-        _LOGGER.debug("async_step_zeroconf called")
-        _LOGGER.debug(f"Input: {discovery_info}")
-
-        # Hostname is format: DELLDCCFBB.local.
-        _LOGGER.debug(f"Discovered hostname: {discovery_info.hostname}")
-        _LOGGER.debug(f"Discovered host: {discovery_info.host}")
-        _LOGGER.debug(f"Discovered port: {discovery_info.port}")
-        _LOGGER.debug(f"Discovered type: {discovery_info.type}")
-        _LOGGER.debug(f"Discovered name: {discovery_info.name}")
-
         # extract some defaults from zeroconf
-        user_input = {
+        hass_url = self._get_hass_url(self.hass)
+        discovered = {
             "address": discovery_info.host,
             "port": discovery_info.port,
-            "name": discovery_info.name
+            "name": discovery_info.name.split('.')[0],
+            "hass_url": hass_url,
+            "update_seconds": POLLING_INTERVAL
         }
+        LOGGER.debug(f"Input: {user_input}")
 
-        # what to ask the user
-        # schema = self._get_schema(user_input)
+        await self.async_set_unique_id(user_input.get("name"))
+
+        # store the data for the next step
+        self.context.update({
+            "title.placeholders": {
+                "address": discovered.get("address"),
+                "port": discovered.get("port"),
+                "name": discovered.get("name"),
+                "hass_url": discovered.get("hass_url"),
+                "update_seconds": discovered.get("update_seconds")
+            }
+        })
 
         # show the form to the user
         _LOGGER.debug("async_step_user will be called")
-        return self.async_step_user(user_input)
+        return self.async_step_zeroconf_confirm()
+
+    async def async_step_confirm_confirm(self, user_input: Dict[str, Any] = None):
+        # confirm the zeroconf discovered data
+        _LOGGER.debug("async_step_confirm called")
+
+        errors = {}
+
+        # user input was provided, so check and save it
+        if user_input is not None:
+            
+            # do some checks first
+            if not user_input.get("address"):
+                errors["address"] = "no_printer_url"
+            if not user_input.get("port"):
+                errors["port"] = "no_printer_port"
+
+            # if there are no errors, we can create a configuration entry
+            if not errors:
+                _LOGGER.debug("checking if unique id is configured")
+                self._abort_if_unique_id_configured()
+                _LOGGER.debug("no, so async_create_entry will be called")
+                return self.async_create_entry(
+                    title=user_input.get("name") or DEFAULT_NAME,
+                    data=user_input
+                )
+
+        # what to ask the user
+        schema = self._get_schema(user_input)
+
+        # show the form to the user
+        _LOGGER.debug("async_show_form will be called")
+        return self.async_show_form(step_id="zeroconf_confirm", data_schema=schema, errors=errors)
