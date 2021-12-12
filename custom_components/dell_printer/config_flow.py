@@ -14,14 +14,6 @@ from .const import DEFAULT_NAME, DOMAIN, DEFAULT_PORT, POLLING_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_HOST): cv.string,
-        vol.Required(CONF_PORT): cv.string,
-    },
-    extra=vol.PREVENT_EXTRA,
-)
-
 class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def _get_hass_url(self, hass):
@@ -30,6 +22,22 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except Exception as err:
             _LOGGER.exception(f"Error getting HASS url: {err}")
             return ""
+
+    def _get_schema(self, user_input):
+        schema = vol.Schema({
+            vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
+            vol.Required("address", default=user_input.get("address", "")): cv.string,
+            vol.Required("port", default=user_input.get("port", DEFAULT_PORT)): vol.All(
+                cv.positive_int,
+                vol.Range(min=0, max=65535)
+            ),
+            vol.Optional("hass_url", default=user_input.get("hass_url", "")): cv.string,
+            vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
+                cv.positive_int,
+                vol.Range(min=10, max=600)
+            ),
+        })
+        return schema
 
     async def async_step_user(self, user_input=None):
         _LOGGER.debug("async_step_user called")
@@ -69,19 +77,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         
         # what to ask the user
-        schema = vol.Schema({
-            vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
-            vol.Required("address", default=user_input.get("address", "")): cv.string,
-            vol.Required("port", default=user_input.get("port", DEFAULT_PORT)): vol.All(
-                cv.positive_int,
-                vol.Range(min=0, max=65535)
-            ),
-            vol.Optional("hass_url", default=user_input.get("hass_url", "")): cv.string,
-            vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
-                cv.positive_int,
-                vol.Range(min=10, max=600)
-            ),
-        })
+        schema = self._get_schema(user_input)
 
         # show the form to the user
         _LOGGER.debug("async_show_form will be called")
@@ -102,10 +98,16 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug(f"Discovered type: {discovery_info.type}")
         _LOGGER.debug(f"Discovered name: {discovery_info.name}")
 
+        # extract some defaults from zeroconf
         user_input = {
             "address": discovery_info.host,
             "port": discovery_info.port,
             "name": discovery_info.name
         }
 
-        return self.async_step_user(self, user_input)
+        # what to ask the user
+        # schema = self._get_schema(user_input)
+
+        # show the form to the user
+        _LOGGER.debug("async_step_user will be called")
+        return self.async_step_user(user_input)
