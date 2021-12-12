@@ -54,29 +54,20 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # user input was provided, so check and save it
         if user_input is not None:
             
-            # do some checks first
-            if not user_input.get("address"):
-                errors["address"] = "no_printer_url"
-            if not user_input.get("port"):
-                errors["port"] = "no_printer_port"
+            _LOGGER.debug("checking if unique id is configured")
+            self._abort_if_unique_id_configured()
+            _LOGGER.debug("no, so async_create_entry will be called")
+            return self.async_create_entry(
+                title=user_input.get("name") or DEFAULT_NAME,
+                data=user_input
+            )
 
-            # if there are no errors, we can create a configuration entry
-            if not errors:
-                _LOGGER.debug("checking if unique id is configured")
-                self._abort_if_unique_id_configured()
-                _LOGGER.debug("no, so async_create_entry will be called")
-                return self.async_create_entry(
-                    title=user_input.get("name") or DEFAULT_NAME,
-                    data=user_input
-                )
-
-        # no input or error so far
-        if user_input is None:
-            _LOGGER.debug("so far no user input")
-            hass_url = self._get_hass_url(self.hass)
-            user_input = {
-                "hass_url": hass_url
-            }
+        # no input so far
+        _LOGGER.debug("so far no user input")
+        hass_url = self._get_hass_url(self.hass)
+        user_input = {
+            "hass_url": hass_url
+        }
         
         # what to ask the user
         schema = self._get_schema(user_input)
@@ -117,9 +108,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # show the form to the user
         _LOGGER.debug("async_step_zeroconf_confirm will be called")
-        return self.async_step_zeroconf_confirm()
+        return self.async_step_confirm()
 
-    async def async_step_zeroconf_confirm(self, user_input: Dict[str, Any] = None):
+    async def async_step_confirm(self, user_input: Dict[str, Any] = None):
         # confirm the zeroconf discovered data
         _LOGGER.debug("async_step_zeroconf_confirm called")
 
@@ -128,25 +119,17 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # user input was provided, so check and save it
         if user_input is not None:
             
-            # do some checks first
-            if not user_input.get("address"):
-                errors["address"] = "no_printer_url"
-            if not user_input.get("port"):
-                errors["port"] = "no_printer_port"
-
-            # if there are no errors, we can create a configuration entry
-            if not errors:
-                _LOGGER.debug("checking if unique id is configured")
-                self._abort_if_unique_id_configured()
-                _LOGGER.debug("no, so async_create_entry will be called")
-                return self.async_create_entry(
-                    title=user_input.get("name") or DEFAULT_NAME,
-                    data=user_input
-                )
+            _LOGGER.debug("checking if unique id is configured")
+            self._abort_if_unique_id_configured()
+            _LOGGER.debug("no, so async_create_entry will be called")
+            return self.async_create_entry(
+                title=user_input.get("name") or DEFAULT_NAME,
+                data=user_input
+            )
 
         # what to ask the user
         schema = self._get_schema(user_input)
 
         # show the form to the user
         _LOGGER.debug("async_show_form will be called")
-        return self.async_show_form(step_id="zeroconf_confirm", data_schema=schema, errors=errors)
+        return self.async_show_form(step_id="confirm", data_schema=schema, errors=errors)
