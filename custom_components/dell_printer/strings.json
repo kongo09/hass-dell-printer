@@ -7,16 +7,15 @@
         "data": {
           "name": "Entry name (optional)",
           "address": "Printer hostname or IP address",
-          "token": "Bridge Api token",
+          "port": "Port of printer",
           "hass_url": "Home Assistant internal URL",
           "update_seconds": "State polling interval (seconds)"
         }
       }
     },
     "error": {
-      "invalid_bridge_token": "Error communicating with Nuki bridge",
-      "no_token": "Bridge token is required",
-      "no_bridge_url": "Bridge address is required"
+      "no_printer_url": "Printer address is required",
+      "no_printer_port": "Printer port is required"
     }
   },
   "options": {

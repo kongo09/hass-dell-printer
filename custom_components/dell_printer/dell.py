@@ -11,7 +11,7 @@ import json
 from datetime import timedelta
 from urllib.parse import urlencode
 
-from .constants import DOMAIN
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

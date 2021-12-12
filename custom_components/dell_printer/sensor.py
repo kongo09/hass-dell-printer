@@ -3,7 +3,7 @@ from homeassistant.components.sensor import SensorEntity
 import logging
 
 from . import DellPrinter
-from .constants import DOMAIN
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

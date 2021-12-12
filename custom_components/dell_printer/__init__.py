@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .dell import DellCoordinator
-from .constants import DOMAIN, PLATFORMS
+from .const import DOMAIN, PLATFORMS
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import service
