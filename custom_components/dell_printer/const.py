@@ -5,5 +5,4 @@ PLATFORMS = ["sensor"]
 POLLING_INTERVAL = 30
 
 # configuration parameters
-DEFAULT_PORT = 80
 DEFAULT_NAME = "Dell Printer"
