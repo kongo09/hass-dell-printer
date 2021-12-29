@@ -5,7 +5,6 @@ from homeassistant.data_entry_flow import FlowResult
 
 from homeassistant.const import CONF_HOST
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.network import get_url
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from dell_printer_parser.printer_parser import DellPrinterParser
