@@ -38,10 +38,9 @@ def host_valid(host: str) -> bool:
 class UnsupportedModel(Exception):
     """Raised when no model, serial no, firmware data."""
 
-    def __init__(self, status: str) -> None:
-        """Initialize."""
-        super().__init__(status)
-        self.status = status
+
+class InvalidHost(exceptions.HomeAssistantError):
+    """Error to indicate that hostname/IP address is invalid."""
 
 
 class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
