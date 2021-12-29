@@ -52,7 +52,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize."""
         self.printer: DellPrinterParser = None
-        self.host: str | None = None
+        self.host: str = None
 
 
     def _get_schema(self, user_input):
@@ -70,7 +70,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, 
-        user_input: dict[str, Any] | None = None
+        user_input: dict[str, Any] = None
     ) -> FlowResult:
         """Handle initial step of user config flow."""
 
