@@ -1,73 +1,127 @@
+"""The Dell Printer component."""
 from homeassistant import config_entries, exceptions
+from homeassistant.components import zeroconf
+from homeassistant.data_entry_flow import FlowResult
 
-from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.const import CONF_HOST
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.network import get_url
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from dell_printer_parser.printer_parser import DellPrinterParser
+
+from aiohttp.client_exceptions import ClientConnectorError
 
 from typing import Any, Dict, Optional
-from .dell import DellInterface
+import ipaddress
 
 import logging
 import voluptuous as vol
 
-from .const import DEFAULT_NAME, DOMAIN, DEFAULT_PORT, POLLING_INTERVAL
+from .const import DEFAULT_NAME, DOMAIN, POLLING_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
+
+
+def host_valid(host: str) -> bool:
+    """Return True if hostname or IP address is valid."""
+    try:
+        if ipaddress.ip_address(host).version in [4, 6]:
+            return True
+    except ValueError:
+        pass
+    disallowed = re.compile(r"[^a-zA-Z\d\-]")
+    return all(x and not disallowed.search(x) for x in host.split("."))
+
+
+class UnsupportedModel(Exception):
+    """Raised when no model, serial no, firmware data."""
+
+    def __init__(self, status: str) -> None:
+        """Initialize."""
+        super().__init__(status)
+        self.status = status
+
+
 class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle config flow for DELL printers."""
 
-    def _get_hass_url(self, hass):
-        try:
-            return get_url(hass)
-        except Exception as err:
-            _LOGGER.exception(f"Error getting HASS url: {err}")
-            return ""
+    VERSION = 1
 
-    def _get_schema(self, user_input):
+    def __init__(self) -> None:
+        """Initialize."""
+        self.printer: DellPrinterParser = None
+        self.host: str | None = None
+
+
+    def _get_schema(self, info):
+        """Provide schema for user input."""
         schema = vol.Schema({
-            vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
-            vol.Required("address", default=user_input.get("address", "")): cv.string,
-            vol.Required("port", default=user_input.get("port", DEFAULT_PORT)): vol.All(
-                cv.positive_int,
-                vol.Range(min=0, max=65535)
-            ),
-            vol.Optional("hass_url", default=user_input.get("hass_url", "")): cv.string,
-            vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
+            vol.Optional("name", default=info.get("name", DEFAULT_NAME)): cv.string,
+            vol.Required("address", default=info.get("address", "")): cv.string,
+            vol.Required("update_seconds", default=info.get("update_seconds", POLLING_INTERVAL)): vol.All(
                 cv.positive_int,
                 vol.Range(min=10, max=600)
             ),
         })
         return schema
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle initial step of user config flow."""
+
         _LOGGER.debug("async_step_user called")
         _LOGGER.debug(f"Input: {user_input}")
 
         errors = {}
 
-        # todo: there could potentially be more than one printer
-        if self._async_current_entries():
-            # Config entry already exists, only one allowed.
-            _LOGGER.debug("async_abort will be called")
-            return self.async_abort(reason="single_instance_allowed")
-
         # user input was provided, so check and save it
         if user_input is not None:
-            
             _LOGGER.debug("checking if unique id is configured")
-            self._abort_if_unique_id_configured()
-            _LOGGER.debug("no, so async_create_entry will be called")
-            return self.async_create_entry(
-                title=user_input.get("name") or DEFAULT_NAME,
-                data=user_input
-            )
+            try:
+                # first some sanitycheck on the host input
+                if not host_valid(user_input[CONF_HOST]):
+                    raise InvalidHost()
 
-        # no input so far
-        _LOGGER.debug("so far no user input")
-        hass_url = self._get_hass_url(self.hass)
-        user_input = {
-            "hass_url": hass_url
-        }
+                # now let's try and see if we can connect to a printer
+                session = async_get_clientsession(self.hass)
+                printer = DellPrinterParser(session, user_input[CONF_HOST])
+
+                # try to load some data
+                await printer.load_data()
+
+                # use the serial number as unique id
+                unique_id = printer.information.printerSerialNumber
+
+                # check if we got something
+                if not unique_id:
+                    raise UnsupportedModel()
+
+                # set the unique id for the entry, abort if it already exists
+                _LOGGER.debug(f"using serial as unique_id: {unique_id}")
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+
+                # compile a name from model and serial
+                _LOGGER.debug("async_create_entry will be called, end of config flow")
+                return self.async_create_entry(
+                    title=user_input.get("name") or printer.information.modelName,
+                    data=user_input
+                )
+
+            except InvalidHost:
+                errors[CONF_HOST] = "wrong host"
+            except ConnectionError:
+                errors[CONF_HOST] = "cannot connect"
+            except ClientConnectorError:
+                errors[CONF_HOST] = "cannot connect"
+            except UnsupportedModel:
+                errors['base'] = "printer model not supported"
+
+        # no user_input so far
+        _LOGGER.debug("so far no user_input")
         
         # what to ask the user
         schema = self._get_schema(user_input)
@@ -76,6 +130,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug("async_show_form will be called")
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
+
     async def async_step_zeroconf(self, discovery_info: Optional[Dict[str, Any]]=None):
         # process zeroconf data
         _LOGGER.debug("async_step_zeroconf called")
@@ -83,12 +138,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         # extract some defaults from zeroconf
-        hass_url = self._get_hass_url(self.hass)
         discovered = {
             "address": discovery_info.host,
-            "port": discovery_info.port,
             "name": discovery_info.name.split('.')[0],
-            "hass_url": hass_url,
             "update_seconds": POLLING_INTERVAL
         }
         _LOGGER.debug(f"Input: {discovered}")
