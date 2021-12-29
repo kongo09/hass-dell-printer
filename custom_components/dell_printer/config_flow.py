@@ -55,20 +55,22 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.host: str | None = None
 
 
-    def _get_schema(self, info):
+    def _get_schema(self, user_input):
         """Provide schema for user input."""
         schema = vol.Schema({
-            vol.Optional("name", default=info.get("name", DEFAULT_NAME)): cv.string,
-            vol.Required("address", default=info.get("address", "")): cv.string,
-            vol.Required("update_seconds", default=info.get("update_seconds", POLLING_INTERVAL)): vol.All(
+            vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
+            vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): cv.string,
+            vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
                 cv.positive_int,
                 vol.Range(min=10, max=600)
             ),
         })
         return schema
 
+
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self, 
+        user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle initial step of user config flow."""
 
@@ -131,57 +133,100 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
 
-    async def async_step_zeroconf(self, discovery_info: Optional[Dict[str, Any]]=None):
-        # process zeroconf data
+    async def async_step_zeroconf(
+        self,
+        discovery_info: zeroconf.ZeroconfServiceInfo = None
+        # discovery_info: Optional[Dict[str, Any]] = None
+    ):
+        """Handle zeroconf flow."""
+
         _LOGGER.debug("async_step_zeroconf called")
 
         errors = {}
 
-        # extract some defaults from zeroconf
-        discovered = {
-            "address": discovery_info.host,
-            "name": discovery_info.name.split('.')[0],
-            "update_seconds": POLLING_INTERVAL
-        }
-        _LOGGER.debug(f"Input: {discovered}")
+        # extract some data from zeroconf
+        self.host = discovery_info.host
+        _LOGGER.debug(f"discovered: {discovery_info}")
 
-        await self.async_set_unique_id(discovered.get("name"))
+        # if the hostname already exists, we can stop
+        self._async_abort_entries_match({CONF_HOST: self.host})
 
-        # store the data for the next step
+        # now let's try and see if we can connect to a printer
+        session = async_get_clientsession(self.hass)
+        self.printer = DellPrinterParser(session, self.host)
+
+        # try to load some data
+        try:
+            _LOGGER.debug(f"trying to load the data from the printer")  
+            await self.printer.load_data()
+        except ConnectionError:
+            _LOGGER.debug(f"caught ConnectionError")  
+            self.async_abort(reason="cannot_connect")
+        except ClientConnectorError:
+            _LOGGER.debug(f"caught ClientConnectorError")  
+            self.async_abort(reason="cannot_connect")
+
+        # use the serial number as unique id
+        unique_id = self.printer.information.printerSerialNumber
+
+        # check if we got something
+        if not unique_id:
+            _LOGGER.debug(f"no unique_id found, the printer probably doesn't work")
+            self.async_abort(reason="unsupported_model")
+
+        # set the unique id for the entry, abort if it already exists
+        _LOGGER.debug(f"using serial as unique_id: {unique_id}")
+        await self.async_set_unique_id(unique_id)
+        self._abort_if_unique_id_configured()
+
+        # store the data for the next step to get confirmation
         self.context.update({
-            "title.placeholders": {
-                "address": discovered.get("address"),
-                "port": discovered.get("port"),
-                "name": discovered.get("name"),
-                "hass_url": discovered.get("hass_url"),
-                "update_seconds": discovered.get("update_seconds")
+            "title_placeholders": {
+                "name": self.printer.information.modelName,
+                CONF_HOST: self.host,
+                "update_seconds": POLLING_INTERVAL,
             }
         })
 
         # show the form to the user
         _LOGGER.debug("async_step_zeroconf_confirm will be called")
-        return self.async_step_confirm()
+        return await self.async_step_zeroconf_confirm()
 
-    async def async_step_confirm(self, user_input: Dict[str, Any] = None):
-        # confirm the zeroconf discovered data
+
+    async def async_step_zeroconf_confirm(
+        self,
+        user_input: dict[str, Any] = None
+    ) -> FlowResult:
+        """Confirm the zeroconf discovered data."""
+
         _LOGGER.debug("async_step_zeroconf_confirm called")
 
-        errors = {} 
+        errors = {}
 
         # user input was provided, so check and save it
         if user_input is not None:
             
-            _LOGGER.debug("checking if unique id is configured")
-            self._abort_if_unique_id_configured()
-            _LOGGER.debug("no, so async_create_entry will be called")
+            _LOGGER.debug("async_create_entry will be called, end of config flow")
             return self.async_create_entry(
-                title=user_input.get("name") or DEFAULT_NAME,
-                data=user_input
+                title=self.printer.information.modelName,
+                data={
+                    "name": user_input["name"],
+                    CONF_HOST: self.host,
+                    "update_seconds": user_input["update_seconds"]
+                }
             )
-
-        # what to ask the user
-        schema = self._get_schema(user_input)
 
         # show the form to the user
         _LOGGER.debug("async_show_form will be called")
-        return self.async_show_form(step_id="confirm", data_schema=schema, errors=errors)
+        return self.async_show_form(
+            step_id="zeroconf_confirm",
+            data_schema=vol.Schema({
+                vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
+                vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
+                    cv.positive_int,
+                    vol.Range(min=10, max=600)),
+            }),
+            description_placeholders={
+                CONF_HOST: self.host
+            }
+        )
