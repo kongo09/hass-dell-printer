@@ -3,7 +3,7 @@ from homeassistant import config_entries, exceptions
 from homeassistant.components import zeroconf
 from homeassistant.data_entry_flow import FlowResult
 
-from homeassistant.const import CONF_HOST
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_SCAN_INTERVAL
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -56,9 +56,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def _get_schema(self, user_input):
         """Provide schema for user input."""
         schema = vol.Schema({
-            vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
+            vol.Optional(CONF_NAME, default=user_input.get(CONF_NAME, DEFAULT_NAME)): cv.string,
             vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): cv.string,
-            vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
+            vol.Required(CONF_SCAN_INTERVAL, default=user_input.get(CONF_SCAN_INTERVAL, POLLING_INTERVAL)): vol.All(
                 cv.positive_int,
                 vol.Range(min=10, max=600)
             ),
@@ -107,7 +107,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # compile a name from model and serial
                 _LOGGER.debug("async_create_entry will be called, end of config flow")
                 return self.async_create_entry(
-                    title=user_input.get("name") or printer.information.modelName,
+                    title=user_input.get(CONF_NAME) or printer.information.modelName,
                     data=user_input
                 )
 
@@ -180,9 +180,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # store the data for the next step to get confirmation
         self.context.update({
             "title_placeholders": {
-                "name": self.printer.information.modelName,
+                CONF_NAME: self.printer.information.modelName,
                 CONF_HOST: self.host,
-                "update_seconds": POLLING_INTERVAL,
+                CONF_SCAN_INTERVAL: POLLING_INTERVAL,
             }
         })
 
@@ -208,9 +208,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=self.printer.information.modelName,
                 data={
-                    "name": user_input["name"],
+                    CONF_NAME: user_input[CONF_NAME],
                     CONF_HOST: self.host,
-                    "update_seconds": user_input["update_seconds"]
+                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL]
                 }
             )
 
@@ -219,8 +219,8 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="zeroconf_confirm",
             data_schema=vol.Schema({
-                vol.Optional("name", default=user_input.get("name", DEFAULT_NAME)): cv.string,
-                vol.Required("update_seconds", default=user_input.get("update_seconds", POLLING_INTERVAL)): vol.All(
+                vol.Optional(CONF_NAME, default=user_input.get(CONF_NAME, DEFAULT_NAME)): cv.string,
+                vol.Required(CONF_SCAN_INTERVAL, default=user_input.get(CONF_SCAN_INTERVAL, POLLING_INTERVAL)): vol.All(
                     cv.positive_int,
                     vol.Range(min=10, max=600)),
             }),

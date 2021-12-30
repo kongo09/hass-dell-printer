@@ -1,31 +1,38 @@
+"""The Dell printer component."""
 from __future__ import annotations
-from .dell import DellCoordinator
+
+from dell_printer_parser.printer_parser import DellPrinterParser
+
 from .const import DOMAIN, PLATFORMS
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import service
+from homeassistant.const import CONF_HOST
+from homeassistant.config_entries import ConfigEntry
 
-# from homeassistant.helpers import device_registry
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
 
 import logging
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    data = entry.as_dict()["data"]
-    _LOGGER.debug(f"async_setup_entry: {data}")
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Setup a Dell printer from a config entry."""
 
-    coordinator = DellCoordinator(hass, entry, data)
+     _LOGGER.debug(f"async_setup_entry: {entry}")
+
+    # get the host address
+    host = entry.data[CONF_HOST]
+
+    # setup the parser
+    session = async_get_clientsession(hass)
+    printer = DellPrinterParser(session, host)
+
+    # get a coordinator
+    coordinator = DellDataUpdateCoordinator(hass, printer)
     await coordinator.async_config_entry_first_refresh()
-    hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    for p in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, p))
     return True
 
 
@@ -42,38 +49,28 @@ async def async_setup(hass: HomeAssistant, config) -> bool:
     return True
 
 
-class DellPrinter(CoordinatorEntity):
-    def set_id(self, suffix: str):
-        self.id_suffix = suffix
+class DellDataUpdateCoordinator(DataUpdateCoordinator):
+    """Class to manage fetching data from Dell printer."""
 
-    def set_name(self, name: str):
-        self.name_suffix = name
+    def __init__(
+        self, hass: HomeAssistant, printer: DellPrinterParser
+    ) -> None:
+        """Initialize."""
 
-    @property
-    def name(self) -> str:
-        return "Dell Printer %s" % (self.name_suffix)
+        self.printer = DellPrinterParser(session, host)
 
-    @property
-    def unique_id(self) -> str:
-        return "dell-printer-%s-%s" % (self.get_id, self.id_suffix)
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=SCAN_INTERVAL
+        )
 
-    @property
-    def data(self) -> dict:
-        return self.coordinator.data.get("bridge_info", {})
+    async def _async_update_data(self) -> DictToObj:
+        """Update data via library."""
 
-    @property
-    def get_id(self):
-        return self.data.get("ids", {}).get("hardwareId")
-
-    @property
-    def device_info(self):
-        model = "Hardware Bridge" if self.data.get(
-            "bridgeType", 1) else "Software Bridge"
-        versions = self.data.get("versions", {})
-        return {
-            "identifiers": {("id", self.get_id)},
-            "name": "Dell Printer",
-            "manufacturer": "Dell",
-            "model": model,
-            "sw_version": versions.get("firmwareVersion"),
-        }
+        try:
+            data = await self.brother.async_update()
+        except (ConnectionError) as error:
+            raise UpdateFailed(error) from error
+        return data
