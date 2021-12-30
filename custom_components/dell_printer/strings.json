@@ -6,16 +6,13 @@
         "title": "New Dell printer",
         "data": {
           "name": "Entry name (optional)",
-          "address": "Printer hostname or IP address",
-          "port": "Port of printer",
-          "hass_url": "Home Assistant internal URL",
-          "update_seconds": "State polling interval (seconds)"
+          "host": "Printer hostname or IP address",
+          "scan_interval": "State polling interval (seconds)"
         }
       }
     },
     "error": {
       "no_printer_url": "Printer address is required",
-      "no_printer_port": "Printer port is required"
     }
   },
   "options": {
@@ -23,7 +20,7 @@
       "options": {
         "title": "Configure Dell printer",
         "data": {
-          "update_seconds": "State polling interval (seconds)"
+          "scan_interval": "State polling interval (seconds)"
         }
       }
     }
