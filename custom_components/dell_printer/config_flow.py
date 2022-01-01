@@ -219,8 +219,8 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="zeroconf_confirm",
             data_schema=vol.Schema({
-                vol.Optional(CONF_NAME, default=user_input.get(CONF_NAME, DEFAULT_NAME)): cv.string,
-                vol.Required(CONF_SCAN_INTERVAL, default=user_input.get(CONF_SCAN_INTERVAL, POLLING_INTERVAL)): vol.All(
+                vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+                vol.Required(CONF_SCAN_INTERVAL, default=POLLING_INTERVAL): vol.All(
                     cv.positive_int,
                     vol.Range(min=10, max=600)),
             }),
