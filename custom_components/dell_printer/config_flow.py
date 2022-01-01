@@ -131,9 +131,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
 
-    async def async_step_zeroconf(
-        self,
-        discovery_info: zeroconf.ZeroconfServiceInfo = None
+    async def async_step_zeroconf(self, discovery_info: zeroconf.ZeroconfServiceInfo = None
         # discovery_info: Optional[Dict[str, Any]] = None
     ):
         """Handle zeroconf flow."""
@@ -148,6 +146,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # if the hostname already exists, we can stop
         self._async_abort_entries_match({CONF_HOST: self.host})
+        _LOGGER.debug(f"not aborted, continuing zeroconf")
 
         # now let's try and see if we can connect to a printer
         session = async_get_clientsession(self.hass)
