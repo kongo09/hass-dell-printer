@@ -9,10 +9,17 @@
           "host": "Printer hostname or IP address",
           "scan_interval": "State polling interval (seconds)"
         }
+      },
+      "zeroconf_confirm": {
+        "title": "New Dell printer discovered",
+        "data": {
+          "name": "Entry name (optional)",
+          "scan_interval": "State polling interval (seconds)"
+        }
       }
     },
     "error": {
-      "no_printer_url": "Printer address is required",
+      "no_printer_url": "Printer address is required"
     }
   },
   "options": {
