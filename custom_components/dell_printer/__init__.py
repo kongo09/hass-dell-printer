@@ -32,7 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     printer = DellPrinterParser(session, host)
 
     # setup a coordinator
-    coordinator = DellDataUpdateCoordinator(hass, printer, update_interval)
+    coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, update_interval)
     await coordinator.async_config_entry_first_refresh()
     
     # store coordinator
@@ -61,7 +61,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 class DellDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching Dell data from the printer."""
 
-    def __init__(self, hass: HomeAssistant, printer: DellPrinterParser, update_interval: int) -> None:
+    def __init__(self, hass: HomeAssistant, _LOGGER, printer: DellPrinterParser, update_interval: int) -> None:
         """Initialize."""
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
@@ -70,6 +70,8 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> Dict:
         """Update data via library."""
+
+        _LOGGER.debug(f"coordinator _async_update_data called")
 
         try:
             """Ask the library to reload fresh data."""
