@@ -56,9 +56,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def _get_schema(self, user_input):
         """Provide schema for user input."""
         schema = vol.Schema({
-            vol.Optional(CONF_NAME, default=DEFAULT_NAME: cv.string,
-            vol.Required(CONF_HOST, default="": cv.string,
-            vol.Required(CONF_SCAN_INTERVAL, default=POLLING_INTERVAL: vol.All(
+            vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+            vol.Required(CONF_HOST, default=""): cv.string,
+            vol.Required(CONF_SCAN_INTERVAL, default=POLLING_INTERVAL): vol.All(
                 cv.positive_int,
                 vol.Range(min=10, max=600)
             ),
