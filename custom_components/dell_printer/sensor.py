@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     entities = []
-    coordinator = hass.data[DOMAIN]
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
     entities.append(PrintVolume(coordinator))
     
@@ -26,7 +26,7 @@ class PrintVolume(CoordinatorEntity):
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
         self.attrs = {}
-        self._state = coordinator.data[PRINTER_PRINT_VOLUME]
+        # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
         self.set_id("print_volume")
         self.set_name("Print Volume")
         
@@ -40,7 +40,7 @@ class PrintVolume(CoordinatorEntity):
     
     @property
     def state(self):
-        return coordinator.data[PRINTER_PRINT_VOLUME]
+        return self.coordinator.data[PRINTER_PRINT_VOLUME]
 
     @property
     def entity_category(self):
