@@ -31,11 +31,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # setup the parser
     update_interval = entry.data[CONF_SCAN_INTERVAL]
     session = async_get_clientsession(hass)
-    printer = DellPrinterParser(session, host)
+    printer = DellPrinterParser(session, host)    
+    _LOGGER.debug(f"async_setup_entry: DellPrinterParser {printer}")
 
     # setup a coordinator
     coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
+    _LOGGER.debug(f"async_setup_entry: coordinator before first refresh DellPrinterParser {coordinator.printer}")
     await coordinator.async_config_entry_first_refresh()
+    _LOGGER.debug(f"async_setup_entry: coordinator after first refresh DellPrinterParser {coordinator.printer}")
+    _LOGGER.debug(f"async_setup_entry: coordinator model = {coordinator.printer.information.modelName}")
     
     # store coordinator
     hass.data.setdefault(DOMAIN, {})
@@ -64,19 +68,22 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, _LOGGER, printer: DellPrinterParser, update_interval: timedelta) -> None:
         """Initialize."""
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+        _LOGGER.debug(f"coordinator __init__ with printer: {printer}")
         self.printer = printer
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
 
     async def _async_update_data(self) -> Dict:
         """Update data via library."""
 
         _LOGGER.debug(f"coordinator _async_update_data called")
+        _LOGGER.debug(f"coordinator printer: {self.printer}")
 
         try:
             """Ask the library to reload fresh data."""
             self.printer.load_data()
             _LOGGER.debug(f"coordinator load_data() called")
+            _LOGGER.debug(f"coordinator model = {self.printer.information.modelName}")
         except (ConnectionError) as error:
             raise UpdateFailed(error) from error
 
