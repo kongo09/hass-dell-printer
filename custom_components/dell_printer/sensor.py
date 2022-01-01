@@ -27,21 +27,13 @@ class PrintVolume(CoordinatorEntity):
         super().__init__(coordinator)
         self.attrs = {}
         # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
-        self.set_id("print_volume")
-        self.set_name("Print Volume")
+        self._id = "print_volume"
+        self._name = "Print Volume"
+        self._icon = "mdi:file-document-multiple-outline"
+        self._native_unit_of_measurement = "pages"
+        self._state_class = "measurement"
+        self._entity_category = "diagnostic"
         
     @property
-    def unit_of_measurement(self):
-        return "pages"
-
-    @property
-    def icon(self):
-        return "mdi:file-document-multiple-outline"
-    
-    @property
-    def state(self):
+    def native_value(self):
         return self.coordinator.data[PRINTER_PRINT_VOLUME]
-
-    @property
-    def entity_category(self):
-        return "diagnostic"
