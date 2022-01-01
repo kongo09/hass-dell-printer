@@ -1,6 +1,7 @@
 """The Dell printer component."""
 from __future__ import annotations
 from typing import Dict
+from datetime import timedelta
 
 from dell_printer_parser.printer_parser import DellPrinterParser
 
@@ -33,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     printer = DellPrinterParser(session, host)
 
     # setup a coordinator
-    coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, update_interval)
+    coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
     await coordinator.async_config_entry_first_refresh()
     
     # store coordinator
@@ -60,7 +61,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 class DellDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching Dell data from the printer."""
 
-    def __init__(self, hass: HomeAssistant, _LOGGER, printer: DellPrinterParser, update_interval: int) -> None:
+    def __init__(self, hass: HomeAssistant, _LOGGER, printer: DellPrinterParser, update_interval: timedelta) -> None:
         """Initialize."""
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
