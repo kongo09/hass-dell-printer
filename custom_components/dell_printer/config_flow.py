@@ -13,6 +13,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 
 from typing import Any, Dict, Optional
 import ipaddress
+import re
 
 import logging
 import voluptuous as vol
@@ -66,10 +67,7 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return schema
 
 
-    async def async_step_user(
-        self, 
-        user_input: dict[str, Any] = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] = None) -> FlowResult:
         """Handle initial step of user config flow."""
 
         _LOGGER.debug("async_step_user called")
