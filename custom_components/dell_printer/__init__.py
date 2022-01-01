@@ -116,4 +116,6 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
         data[PAPER_USED_C5] = self.printer.printVolume.paperUsedC5
         data[PAPER_USED_OTHERS] = self.printer.printVolume.paperUsedOthers
 
+        _LOGGER.debug(f"coordinator retrieved data: {data}")
+
         return data
