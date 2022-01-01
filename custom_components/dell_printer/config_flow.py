@@ -181,7 +181,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.context.update({
             "title_placeholders": {
                 CONF_NAME: self.printer.information.modelName,
-                CONF_HOST: self.host,
                 CONF_SCAN_INTERVAL: POLLING_INTERVAL,
             }
         })
@@ -216,10 +215,11 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # show the form to the user
         _LOGGER.debug("async_show_form will be called")
+        name = self.printer.information.modelName
         return self.async_show_form(
             step_id="zeroconf_confirm",
             data_schema=vol.Schema({
-                vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+                vol.Optional(CONF_NAME, default=name): cv.string,
                 vol.Required(CONF_SCAN_INTERVAL, default=POLLING_INTERVAL): vol.All(
                     cv.positive_int,
                     vol.Range(min=10, max=600)),
