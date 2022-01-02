@@ -61,8 +61,6 @@ class PrintVolume(DellPrinterEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
-        self.attrs = {}
-        self._state = coordinator.data[PRINTER_PAGE_COUNT]
         self._id = DOMAIN + "_print_volume"
         self._attr_name = "Print Volume"
         self._attr_icon = "mdi:file-document-multiple-outline"
@@ -84,5 +82,7 @@ class PrintVolume(DellPrinterEntity):
 
     @property
     def device_state_attributes(self) -> Dict[str, Any]:
+        self.attrs = {}
         self.attrs[ATTR_PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         self.attrs[ATTR_PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
+        return attrs
