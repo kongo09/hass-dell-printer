@@ -1,7 +1,12 @@
+from typing import Callable
 from custom_components.dell_printer import DellDataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.typing import {
+    ConfigType, DiscoveryInfoType, HomeAssistantType
+}
+from homeassistant.config_entries import ConfigEntry
 
 import logging
 
@@ -10,10 +15,24 @@ from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_P
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities: Callable, discovery_info: Optional[DiscoverInfoType] = None) -> None:
+    """Setup sensor platform."""
+
+    _LOGGER.debug(f"async_setup_platform called")
+    _LOGGER.debug(f"config: {config}")
+
+
+
+
+async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_add_entities: Callable):
+    """Setup sensor entity."""
+
+    _LOGGER.debug(f"async_setup_entry called")
+
     entities = []
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
+    _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(PrintVolume(coordinator))
     
     async_add_entities(entities, True)
