@@ -31,11 +31,14 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
 class DellPrinterEntity(CoordinatorEntity, SensorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
+        _LOGGER.debug(f"DellPrinterEntity __init__ before super")
         super().__init__(coordinator)
+        _LOGGER.debug(f"DellPrinterEntity __init__ after super")
         self._serialNumber = coordinator.data[PRINTER_SERIAL_NUMBER]
         self._modelName = coordinator.data[MODEL_NAME]
         self._firmware = coordinator.data[FIRMWARE_VERSION]
         self._name = DEFAULT_NAME
+        self._available = True
 
     @property
     def device_info(self):
@@ -49,12 +52,19 @@ class DellPrinterEntity(CoordinatorEntity, SensorEntity):
             "sw_version": self._firmware,
         }
 
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return self._available
+
 
 class PrintVolume(DellPrinterEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
+        _LOGGER.debug(f"PrintVolume __init__ before super")
         super().__init__(coordinator)
+        _LOGGER.debug(f"PrintVolume __init__ after super")
         self.attrs = {}
         # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
         self._id = "print_volume"
@@ -69,3 +79,8 @@ class PrintVolume(DellPrinterEntity):
         pageCount = self.coordinator.data[PRINTER_PAGE_COUNT]
         _LOGGER.debug(f"state: {pageCount}")
         return pageCount
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of the sensor."""
+        return self._serialNumber + "_print_volume"
