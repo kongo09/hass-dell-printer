@@ -13,15 +13,6 @@ from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_P
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities: Callable, discovery_info: Optional[DiscoveryInfoType] = None) -> None:
-    """Setup sensor platform."""
-
-    _LOGGER.debug(f"async_setup_platform called")
-    _LOGGER.debug(f"config: {config}")
-
-
-
-
 async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_add_entities: Callable):
     """Setup sensor entity."""
 
@@ -33,7 +24,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(PrintVolume(coordinator))
     
-    async_add_entities(entities, True)
+    async_add_entities(entities, update_before_add=True)
     return True
 
 
