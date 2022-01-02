@@ -1,6 +1,6 @@
 from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, BinarySensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, HomeAssistantType
@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 
 import logging
 
-from .const import ATTR_PAPER_USED_B5, ATTR_PAPER_USED_LETTER, DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PAPER_USED_B5, PAPER_USED_LETTER, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER
+from .const import ATTR_PAPER_USED_B5, ATTR_PAPER_USED_LETTER, DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PAPER_USED_B5, PAPER_USED_LETTER, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     return True
 
 
-class DellPrinterEntity(CoordinatorEntity, SensorEntity):
+class DellPrinterEntity(CoordinatorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
@@ -56,7 +56,7 @@ class DellPrinterEntity(CoordinatorEntity, SensorEntity):
         return self._available
 
 
-class PrintVolume(DellPrinterEntity):
+class PrintVolume(DellPrinterEntity, SensorEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
@@ -85,4 +85,28 @@ class PrintVolume(DellPrinterEntity):
         self.attrs = {}
         self.attrs[ATTR_PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         self.attrs[ATTR_PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
-        return attrs
+        return self.attrs
+
+
+class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
+    """Representation of a sensor."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        self._id = DOMAIN + "_rear_feeder"
+        self._attr_name = "Rear Feeder"
+        self._attr_icon = "mdi:file-document-multiple-outline"
+        self._attr_entity_category = "diagnostic"
+        self._attr_device_class = "opening"
+        self.attrs: Dict[str, Any]
+        
+    @property
+    def is_on(self) -> bool:
+        is_on: bool = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
+        return is_on
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of the sensor."""
+        return self._serialNumber + "_rear_feeder"
+
