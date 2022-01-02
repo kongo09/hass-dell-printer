@@ -58,4 +58,6 @@ class PrintVolume(DellPrinterEntity):
         
     @property
     def state(self):
-        return self.coordinator.data[PRINTER_PAGE_COUNT]
+        pageCount = self.coordinator.data[PRINTER_PAGE_COUNT]
+        _LOGGER.debug(f"state: {pageCount}")
+        return pageCount
