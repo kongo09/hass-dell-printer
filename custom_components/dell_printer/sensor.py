@@ -37,7 +37,7 @@ class DellPrinterEntity(CoordinatorEntity, SensorEntity):
         self._serialNumber = coordinator.data[PRINTER_SERIAL_NUMBER]
         self._modelName = coordinator.data[MODEL_NAME]
         self._firmware = coordinator.data[FIRMWARE_VERSION]
-        self._name = DEFAULT_NAME
+        self._name = self._serialNumber
         self._available = True
 
     @property
@@ -47,8 +47,8 @@ class DellPrinterEntity(CoordinatorEntity, SensorEntity):
                 (DOMAIN, self._serialNumber)
             },
             "name": self._name,
-            "manufacturer": "Dell",
             "model": self._modelName,
+            "manufacturer": "Dell",
             "sw_version": self._firmware,
         }
 
