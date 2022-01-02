@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 
 import logging
 
-from .const import ADF_COVER_STATUS, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, MULTI_PURPOSE_FEEDER_CAPACITY, MULTI_PURPOSE_FEEDER_SIZE, MULTI_PURPOSE_FEEDER_STATUS, OUTPUT_TRAY_CAPACITY, OUTPUT_TRAY_STATUS, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS
+from .const import ADF_COVER_STATUS, BLACK_LEVEL, CYAN_LEVEL, DOMAIN, FIRMWARE_VERSION, MAGENTA_LEVEL, MODEL_NAME, MULTI_PURPOSE_FEEDER_CAPACITY, MULTI_PURPOSE_FEEDER_SIZE, MULTI_PURPOSE_FEEDER_STATUS, OUTPUT_TRAY_CAPACITY, OUTPUT_TRAY_STATUS, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS, YELLOW_LEVEL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,6 +27,10 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     entities.append(AdfCoverStatus(coordinator))
     entities.append(OutputTrayStatus(coordinator))
     entities.append(PaperTrayStatus(coordinator))
+    entities.append(CyanStatus(coordinator))
+    entities.append(MagentaStatus(coordinator))
+    entities.append(YellowStatus(coordinator))
+    entities.append(BlackStatus(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
@@ -66,33 +70,94 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
         self._id = DOMAIN + "_print_volume"
+        self._attr_unique_id = self._serialNumber + "_print_volume"
         self._attr_name = "Print Volume"
         self._attr_icon = "mdi:file-document-multiple-outline"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
         self._attr_entity_category = "diagnostic"
-        self.attrs: Dict[str, Any]
         
     @property
-    def state(self):
-        pageCount = self.coordinator.data[PRINTER_PAGE_COUNT]
-        _LOGGER.debug(f"state: {pageCount}")
-        return pageCount
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID of the sensor."""
-        return self._serialNumber + "_print_volume"
+    def state(self) -> int:
+        return self.coordinator.data[PRINTER_PAGE_COUNT]
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        self.attrs = {
-            paper.lstrip("paper_used_"): used
+        attrs = {
+            paper.removeprefix("paper_used_"): used
             for paper, used in self.coordinator.data.items()
             if paper.startswith("paper_")
         }
-        _LOGGER.debug(f"extra_state_attributes: {self.attrs}")
-        return self.attrs
+        _LOGGER.debug(f"extra_state_attributes: {attrs}")
+        return attrs
+
+
+class TonerStatus(DellPrinterEntity, SensorEntity):
+    """Representation of a toner sensor."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator, name: str):
+        super().__init__(coordinator)
+        self._attr_entity_category = "diagnostic"
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_state_class = "measurement"
+        self.lower_name = name.lower().replace(" ", "_")
+        self._id = DOMAIN + "_" + self.lower_name
+        self._attr_unique_id = self._serialNumber + "_" + self.lower_name          
+        self._attr_name = name
+
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.state >= 10:
+            return "mdi:water"
+        elif self.state >= 2:
+            return "mdi:water-alert"
+        else:
+            return "mdi:water-off"
+
+
+class CyanStatus(TonerStatus):
+    """Representation of cyan toner."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator, "Cyan")
+
+    @property
+    def state(self) -> int:
+        return self.coordinator.data[CYAN_LEVEL]
+
+
+class MagentaStatus(TonerStatus):
+    """Representation of magenta toner."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator, "Magenta")
+
+    @property
+    def state(self) -> int:
+        return self.coordinator.data[MAGENTA_LEVEL]
+
+
+class YellowStatus(TonerStatus):
+    """Representation of yellow toner."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator, "Yellow")
+
+    @property
+    def state(self) -> int:
+        return self.coordinator.data[YELLOW_LEVEL]
+
+
+class BlackStatus(TonerStatus):
+    """Representation of black toner."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator, "Black")
+
+    @property
+    def state(self) -> int:
+        return self.coordinator.data[BLACK_LEVEL]
 
 
 class Status(DellPrinterEntity, BinarySensorEntity):
@@ -104,12 +169,8 @@ class Status(DellPrinterEntity, BinarySensorEntity):
         self._attr_device_class = "opening"
         self.lower_name = name.lower().replace(" ", "_")
         self._id = DOMAIN + "_" + self.lower_name
+        self._attr_unique_id = self._serialNumber + "_" + self.lower_name
         self._attr_name = name
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID of the sensor."""
-        return self._serialNumber + "_" + self.lower_name
 
     @property
     def icon(self) -> str:
@@ -166,7 +227,9 @@ class OutputTrayStatus(Status):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        self.attrs = {OUTPUT_TRAY_CAPACITY: self.coordinator.data[OUTPUT_TRAY_CAPACITY]}
+        self.attrs = {
+            "capacity": self.coordinator.data[OUTPUT_TRAY_CAPACITY]
+        }
         return self.attrs
 
 
@@ -187,7 +250,8 @@ class PaperTrayStatus(Status):
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
         self.attrs = {
-            MULTI_PURPOSE_FEEDER_CAPACITY: self.coordinator.data[MULTI_PURPOSE_FEEDER_CAPACITY],
-            MULTI_PURPOSE_FEEDER_SIZE: self.coordinator.data[MULTI_PURPOSE_FEEDER_SIZE]
+            "capacity": self.coordinator.data[MULTI_PURPOSE_FEEDER_CAPACITY],
+            "size": self.coordinator.data[MULTI_PURPOSE_FEEDER_SIZE]
         }
         return self.attrs
+
