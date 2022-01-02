@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 from custom_components.dell_printer import DellDataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
@@ -13,7 +13,7 @@ from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_P
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities: Callable, discovery_info: Optional[DiscoverInfoType] = None) -> None:
+async def async_setup_platform(hass: HomeAssistantType, config: ConfigType, async_add_entities: Callable, discovery_info: Optional[DiscoveryInfoType] = None) -> None:
     """Setup sensor platform."""
 
     _LOGGER.debug(f"async_setup_platform called")
