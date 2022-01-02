@@ -3,9 +3,7 @@ from custom_components.dell_printer import DellDataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.typing import {
-    ConfigType, DiscoveryInfoType, HomeAssistantType
-}
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, HomeAssistantType
 from homeassistant.config_entries import ConfigEntry
 
 import logging
