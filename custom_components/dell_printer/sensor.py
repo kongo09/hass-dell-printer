@@ -50,7 +50,7 @@ class PrintVolume(DellPrinterEntity):
         self.attrs = {}
         # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
         self._id = "print_volume"
-        self.set_name("Print Volume")
+        self._attr_name = "Print Volume"
         self._attr_icon = "mdi:file-document-multiple-outline"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
