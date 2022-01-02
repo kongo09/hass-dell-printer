@@ -83,7 +83,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        self.attrs = {paper: used for paper, used in self.coordinator.data.items() if used.startswith("PAPER_")}
+        self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("PAPER_")}
         
         # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         # self.attrs[PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
@@ -104,7 +104,7 @@ class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
         
     @property
     def is_on(self) -> bool:
-        is_on: bool = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
+        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
         return is_on
 
     @property
