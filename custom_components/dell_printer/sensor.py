@@ -84,7 +84,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
         self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("PAPER_")}
-        
+        _LOGGER.debug(f"extra_state_attributes: {self.attrs}")
         # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         # self.attrs[PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
         return self.attrs
@@ -97,7 +97,6 @@ class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
         super().__init__(coordinator)
         self._id = DOMAIN + "_rear_feeder"
         self._attr_name = "Rear Feeder"
-        self._attr_icon = "mdi:file-document-multiple-outline"
         self._attr_entity_category = "diagnostic"
         self._attr_device_class = "opening"
         self.attrs: Dict[str, Any]
@@ -112,3 +111,10 @@ class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
         """Return the unique ID of the sensor."""
         return self._serialNumber + "_rear_feeder"
 
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.is_on:
+            return "mdi:tray"
+        else:
+            return "mdi:tray-alert"
