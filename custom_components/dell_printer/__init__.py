@@ -35,6 +35,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     printer = DellPrinterParser(session, host)    
     _LOGGER.debug(f"async_setup_entry: DellPrinterParser {printer}")
+    _LOGGER.debug(f"pre load data, model = {printer.information.modelName}")
+    printer.load_data()
+    _LOGGER.debug(f"post load data, model = {printer.information.modelName}")
 
     # setup a coordinator
     coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
