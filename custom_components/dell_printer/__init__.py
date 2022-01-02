@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     printer = DellPrinterParser(session, host)    
     _LOGGER.debug(f"async_setup_entry: DellPrinterParser {printer}")
     _LOGGER.debug(f"pre load data, model = {printer.information.modelName}")
-    printer.load_data()
+    await printer.load_data()
     _LOGGER.debug(f"post load data, model = {printer.information.modelName}")
 
     # setup a coordinator
@@ -86,7 +86,7 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
 
         try:
             """Ask the library to reload fresh data."""
-            self.printer.load_data()
+            await self.printer.load_data()
             _LOGGER.debug(f"coordinator load_data() called")
             _LOGGER.debug(f"coordinator model = {self.printer.information.modelName}")
         except (ConnectionError) as error:
