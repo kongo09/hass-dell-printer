@@ -81,7 +81,7 @@ class PrintVolume(DellPrinterEntity):
         return self._serialNumber + "_print_volume"
 
     @property
-    def device_state_attributes(self) -> Dict[str, Any]:
+    def extra_state_attributes(self) -> Dict[str, Any]:
         self.attrs = {}
         self.attrs[ATTR_PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         self.attrs[ATTR_PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
