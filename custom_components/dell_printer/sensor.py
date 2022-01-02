@@ -97,14 +97,16 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 class CoverStatus(DellPrinterEntity, BinarySensorEntity):
     """Representation of a cover sensor."""
 
-    def __init__(self, coordinator: DellDataUpdateCoordinator, cover: str):
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
-        self.lower_name = cover.lower().replace(" ", "_")
-        self._id = DOMAIN + "_" + self.lower_name
-        self._attr_name = DOMAIN + " " + cover
         self._attr_entity_category = "diagnostic"
         self._attr_device_class = "opening"
         self.attrs: Dict[str, Any]
+
+    def init_name(self, cover: str) -> None:
+        self.lower_name = cover.lower().replace(" ", "_")
+        self._id = DOMAIN + "_" + self.lower_name
+        self._attr_name = DOMAIN + " " + cover
 
     @property
     def unique_id(self) -> str:
@@ -124,7 +126,8 @@ class RearCoverStatus(CoverStatus, BinarySensorEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
-        super().__init__(coordinator, "Rear Cover")
+        super().__init__(coordinator)
+        self.init_name("Rear Cover")
         
     @property
     def is_on(self) -> bool:
@@ -132,11 +135,12 @@ class RearCoverStatus(CoverStatus, BinarySensorEntity):
         return is_on
 
 
-class AdfCoverStatus(DellPrinterEntity, BinarySensorEntity):
+class AdfCoverStatus(CoverStatus, BinarySensorEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
-        super().__init__(coordinator, "ADF Cover")
+        super().__init__(coordinator)
+        self.init_name("ADF Cover")
         
     @property
     def is_on(self) -> bool:
