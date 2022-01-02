@@ -1,6 +1,7 @@
 from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator
-from homeassistant.components.sensor import SensorEntity, BinarySensorEntity
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, HomeAssistantType
