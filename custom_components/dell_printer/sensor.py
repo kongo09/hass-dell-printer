@@ -24,7 +24,8 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
 
     _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(PrintVolume(coordinator))
-    entities.append(RearFeederStatus(coordinator))
+    entities.append(RearCoverStatus(coordinator))
+    entities.append(AdfCoverStatus(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
@@ -64,7 +65,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
         self._id = DOMAIN + "_print_volume"
-        self._attr_name = "Print Volume"
+        self._attr_name = DOMAIN + " Print Volume"
         self._attr_icon = "mdi:file-document-multiple-outline"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
@@ -93,13 +94,13 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
         return self.attrs
 
 
-class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
+class RearCoverStatus(DellPrinterEntity, BinarySensorEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
-        self._id = DOMAIN + "_rear_feeder"
-        self._attr_name = "Rear Feeder"
+        self._id = DOMAIN + "_rear_cover"
+        self._attr_name = DOMAIN + " Rear Cover"
         self._attr_entity_category = "diagnostic"
         self._attr_device_class = "opening"
         self.attrs: Dict[str, Any]
@@ -112,7 +113,37 @@ class RearFeederStatus(DellPrinterEntity, BinarySensorEntity):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of the sensor."""
-        return self._serialNumber + "_rear_feeder"
+        return self._serialNumber + "_rear_cover"
+
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.is_on:
+            return "mdi:tray"
+        else:
+            return "mdi:tray-alert"
+
+
+class AdfCoverStatus(DellPrinterEntity, BinarySensorEntity):
+    """Representation of a sensor."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        self._id = DOMAIN + "_adf_cover"
+        self._attr_name = DOMAIN + " ADF Cover"
+        self._attr_entity_category = "diagnostic"
+        self._attr_device_class = "opening"
+        self.attrs: Dict[str, Any]
+        
+    @property
+    def is_on(self) -> bool:
+        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
+        return is_on
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of the sensor."""
+        return self._serialNumber + "_adf_cover"
 
     @property
     def icon(self) -> str:
