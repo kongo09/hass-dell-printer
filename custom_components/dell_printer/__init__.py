@@ -14,7 +14,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-import async_timeout
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,9 +26,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # get the host address
     host = entry.data[CONF_HOST]
+    _LOGGER.debug(f"async_setup_entry host: {host}")
+
 
     # setup the parser
     update_interval = entry.data[CONF_SCAN_INTERVAL]
+    _LOGGER.debug(f"async_setup_entry update_interval: {update_interval}")
     session = async_get_clientsession(hass)
     printer = DellPrinterParser(session, host)    
     _LOGGER.debug(f"async_setup_entry: DellPrinterParser {printer}")

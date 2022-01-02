@@ -195,8 +195,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         _LOGGER.debug("async_step_zeroconf_confirm called")
 
-        errors = {}
-
         # user input was provided, so check and save it
         if user_input is not None:
             
