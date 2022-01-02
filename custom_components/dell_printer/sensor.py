@@ -83,9 +83,10 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        self.attrs = {}
-        self.attrs[ATTR_PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
-        self.attrs[ATTR_PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
+        self.attrs = {paper: used for paper, used in self.coordinator.data.items() if used.startswith("PAPER_")}
+        
+        # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
+        # self.attrs[PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
         return self.attrs
 
 
