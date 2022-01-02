@@ -94,61 +94,52 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
         return self.attrs
 
 
-class RearCoverStatus(DellPrinterEntity, BinarySensorEntity):
-    """Representation of a sensor."""
+class CoverStatus(DellPrinterEntity, BinarySensorEntity):
+    """Representation of a cover sensor."""
 
-    def __init__(self, coordinator: DellDataUpdateCoordinator):
+    def __init__(self, coordinator: DellDataUpdateCoordinator, cover: str):
         super().__init__(coordinator)
-        self._id = DOMAIN + "_rear_cover"
-        self._attr_name = DOMAIN + " Rear Cover"
+        self.lower_name = cover.lower().replace(" ", "_")
+        self._id = DOMAIN + "_" + self.lower_name
+        self._attr_name = DOMAIN + " " + cover
         self._attr_entity_category = "diagnostic"
         self._attr_device_class = "opening"
         self.attrs: Dict[str, Any]
-        
-    @property
-    def is_on(self) -> bool:
-        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
-        return is_on
 
     @property
     def unique_id(self) -> str:
         """Return the unique ID of the sensor."""
-        return self._serialNumber + "_rear_cover"
+        return self._serialNumber + "_" + self.lower_name
 
     @property
     def icon(self) -> str:
         """Return icon depending on state."""
         if self.is_on:
-            return "mdi:tray"
-        else:
             return "mdi:tray-alert"
+        else:
+            return "mdi:tray"
+
+
+class RearCoverStatus(CoverStatus, BinarySensorEntity):
+    """Representation of a sensor."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator, "Rear Cover")
+        
+    @property
+    def is_on(self) -> bool:
+        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
+        return is_on
 
 
 class AdfCoverStatus(DellPrinterEntity, BinarySensorEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
-        super().__init__(coordinator)
-        self._id = DOMAIN + "_adf_cover"
-        self._attr_name = DOMAIN + " ADF Cover"
-        self._attr_entity_category = "diagnostic"
-        self._attr_device_class = "opening"
-        self.attrs: Dict[str, Any]
+        super().__init__(coordinator, "ADF Cover")
         
     @property
     def is_on(self) -> bool:
         is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
         return is_on
 
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID of the sensor."""
-        return self._serialNumber + "_adf_cover"
-
-    @property
-    def icon(self) -> str:
-        """Return icon depending on state."""
-        if self.is_on:
-            return "mdi:tray"
-        else:
-            return "mdi:tray-alert"
