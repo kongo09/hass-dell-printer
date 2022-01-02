@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 
 import logging
 
-from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER
+from .const import ATTR_PAPER_USED_B5, ATTR_PAPER_USED_LETTER, DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PAPER_USED_B5, PAPER_USED_LETTER, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,9 +31,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
 class DellPrinterEntity(CoordinatorEntity, SensorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
-        _LOGGER.debug(f"DellPrinterEntity __init__ before super")
         super().__init__(coordinator)
-        _LOGGER.debug(f"DellPrinterEntity __init__ after super")
         self._serialNumber = coordinator.data[PRINTER_SERIAL_NUMBER]
         self._modelName = coordinator.data[MODEL_NAME]
         self._firmware = coordinator.data[FIRMWARE_VERSION]
@@ -62,17 +60,16 @@ class PrintVolume(DellPrinterEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
-        _LOGGER.debug(f"PrintVolume __init__ before super")
         super().__init__(coordinator)
-        _LOGGER.debug(f"PrintVolume __init__ after super")
         self.attrs = {}
-        # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
-        self._id = "print_volume"
+        self._state = coordinator.data[PRINTER_PAGE_COUNT]
+        self._id = DOMAIN + "_print_volume"
         self._attr_name = "Print Volume"
         self._attr_icon = "mdi:file-document-multiple-outline"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
         self._attr_entity_category = "diagnostic"
+        self.attrs: Dict[str, Any]
         
     @property
     def state(self):
@@ -84,3 +81,8 @@ class PrintVolume(DellPrinterEntity):
     def unique_id(self) -> str:
         """Return the unique ID of the sensor."""
         return self._serialNumber + "_print_volume"
+
+    @property
+    def device_state_attributes(self) -> Dict[str, Any]:
+        self.attrs[ATTR_PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
+        self.attrs[ATTR_PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
