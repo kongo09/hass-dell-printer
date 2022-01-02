@@ -53,7 +53,3 @@ PAPER_USED_MONARCH = "paper_used_monarch"
 PAPER_USED_DL = "paper_used_dl"
 PAPER_USED_C5 = "paper_used_c5"
 PAPER_USED_OTHERS = "paper_used_others"
-
-# attribute names
-ATTR_PAPER_USED_LETTER = "Used Letter paper"
-ATTR_PAPER_USED_B5 = "Used B5 paper"
