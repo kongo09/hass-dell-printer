@@ -70,14 +70,10 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: dict[str, Any] = None) -> FlowResult:
         """Handle initial step of user config flow."""
 
-        _LOGGER.debug("async_step_user called")
-        _LOGGER.debug(f"Input: {user_input}")
-
         errors = {}
 
         # user input was provided, so check and save it
         if user_input is not None:
-            _LOGGER.debug("checking if unique id is configured")
             try:
                 # first some sanitycheck on the host input
                 if not host_valid(user_input[CONF_HOST]):
@@ -98,12 +94,10 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     raise UnsupportedModel()
 
                 # set the unique id for the entry, abort if it already exists
-                _LOGGER.debug(f"using serial as unique_id: {unique_id}")
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
                 # compile a name from model and serial
-                _LOGGER.debug("async_create_entry will be called, end of config flow")
                 return self.async_create_entry(
                     title=user_input.get(CONF_NAME) or printer.information.modelName,
                     data=user_input
@@ -119,13 +113,10 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors['base'] = "printer model not supported"
 
         # no user_input so far
-        _LOGGER.debug("so far no user_input")
-        
         # what to ask the user
         schema = self._get_schema(user_input)
 
         # show the form to the user
-        _LOGGER.debug("async_show_form will be called")
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
 
@@ -133,8 +124,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # discovery_info: Optional[Dict[str, Any]] = None
     ):
         """Handle zeroconf flow."""
-
-        _LOGGER.debug("async_step_zeroconf called")
 
         errors = {}
 
@@ -144,7 +133,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # if the hostname already exists, we can stop
         self._async_abort_entries_match({CONF_HOST: self.host})
-        _LOGGER.debug(f"not aborted, continuing zeroconf")
 
         # now let's try and see if we can connect to a printer
         session = async_get_clientsession(self.hass)
@@ -152,13 +140,10 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # try to load some data
         try:
-            _LOGGER.debug(f"trying to load the data from the printer")  
             await self.printer.load_data()
         except ConnectionError:
-            _LOGGER.debug(f"caught ConnectionError")  
             self.async_abort(reason="cannot_connect")
         except ClientConnectorError:
-            _LOGGER.debug(f"caught ClientConnectorError")  
             self.async_abort(reason="cannot_connect")
 
         # use the serial number as unique id
@@ -166,11 +151,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # check if we got something
         if not unique_id:
-            _LOGGER.debug(f"no unique_id found, the printer probably doesn't work")
             self.async_abort(reason="unsupported_model")
 
         # set the unique id for the entry, abort if it already exists
-        _LOGGER.debug(f"using serial as unique_id: {unique_id}")
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
 
@@ -183,7 +166,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         })
 
         # show the form to the user
-        _LOGGER.debug("async_step_zeroconf_confirm will be called")
         return await self.async_step_zeroconf_confirm()
 
 
@@ -193,12 +175,9 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Confirm the zeroconf discovered data."""
 
-        _LOGGER.debug("async_step_zeroconf_confirm called")
-
         # user input was provided, so check and save it
         if user_input is not None:
             
-            _LOGGER.debug("async_create_entry will be called, end of config flow")
             return self.async_create_entry(
                 title=self.printer.information.modelName,
                 data={
@@ -209,7 +188,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         # show the form to the user
-        _LOGGER.debug("async_show_form will be called")
         name = self.printer.information.modelName
         return self.async_show_form(
             step_id="zeroconf_confirm",

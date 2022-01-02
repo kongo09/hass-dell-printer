@@ -22,31 +22,20 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Setup a Dell printer from a config entry."""
 
-    _LOGGER.debug(f"async_setup_entry: {entry}")
-
     # get the host address
     host = entry.data[CONF_HOST]
-    _LOGGER.debug(f"async_setup_entry host: {host}")
-
 
     # setup the parser
     update_interval = entry.data[CONF_SCAN_INTERVAL]
-    _LOGGER.debug(f"async_setup_entry update_interval: {update_interval}")
     session = async_get_clientsession(hass)
     printer = DellPrinterParser(session, host)    
-    _LOGGER.debug(f"async_setup_entry: DellPrinterParser {printer}")
-    _LOGGER.debug(f"pre load data, model = {printer.information.modelName}")
     await printer.load_data()
-    _LOGGER.debug(f"post load data, model = {printer.information.modelName}")
 
     # setup a coordinator
     coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
-    _LOGGER.debug(f"async_setup_entry: coordinator before first refresh DellPrinterParser {coordinator.printer}")
 
     # refresh coordinator for the first time to load initial data
     await coordinator.async_config_entry_first_refresh()
-    _LOGGER.debug(f"async_setup_entry: coordinator after first refresh DellPrinterParser {coordinator.printer}")
-    _LOGGER.debug(f"async_setup_entry: coordinator model = {coordinator.printer.information.modelName}")
     
     # store coordinator
     hass.data.setdefault(DOMAIN, {})
@@ -79,7 +68,6 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, _LOGGER, printer: DellPrinterParser, update_interval: timedelta) -> None:
         """Initialize."""
 
-        _LOGGER.debug(f"coordinator __init__ with printer: {printer}")
         self.printer = printer
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
 
@@ -87,14 +75,10 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> Dict:
         """Update data via library."""
 
-        _LOGGER.debug(f"coordinator _async_update_data called")
-        _LOGGER.debug(f"coordinator printer: {self.printer}")
-
         try:
             """Ask the library to reload fresh data."""
             await self.printer.load_data()
             _LOGGER.debug(f"coordinator load_data() called")
-            _LOGGER.debug(f"coordinator model = {self.printer.information.modelName}")
         except (ConnectionError) as error:
             raise UpdateFailed(error) from error
 
@@ -135,7 +119,5 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
         data[PAPER_USED_DL] = self.printer.printVolume.paperUsedDL
         data[PAPER_USED_C5] = self.printer.printVolume.paperUsedC5
         data[PAPER_USED_OTHERS] = self.printer.printVolume.paperUsedOthers
-
-        _LOGGER.debug(f"coordinator retrieved data: {data}")
 
         return data
