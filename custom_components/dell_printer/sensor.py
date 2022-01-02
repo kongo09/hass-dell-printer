@@ -24,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
 
     _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(PrintVolume(coordinator))
+    entities.append(RearFeederStatus(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
@@ -83,6 +84,8 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
+        _LOGGER.debug(f"extra_state_attributes called")
+        _LOGGER.debug(f"raw: {self.coordinator.data.items()}")
         self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("PAPER_")}
         _LOGGER.debug(f"extra_state_attributes: {self.attrs}")
         # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
