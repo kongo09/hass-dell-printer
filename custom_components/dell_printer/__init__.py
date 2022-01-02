@@ -42,6 +42,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # setup a coordinator
     coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
     _LOGGER.debug(f"async_setup_entry: coordinator before first refresh DellPrinterParser {coordinator.printer}")
+
+    # refresh coordinator for the first time to load initial data
     await coordinator.async_config_entry_first_refresh()
     _LOGGER.debug(f"async_setup_entry: coordinator after first refresh DellPrinterParser {coordinator.printer}")
     _LOGGER.debug(f"async_setup_entry: coordinator model = {coordinator.printer.information.modelName}")
@@ -51,7 +53,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
     # setup sensors
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    for p in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, p)
+        )
+    # hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     return True
 
@@ -59,12 +65,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
     
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    await hass.data[DOMAIN][entry.entry_id].unload()
+    
+    for p in PLATFORMS:
+        await hass.config_entries.async_forward_entry_unload(entry, p)
 
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+    hass.data[DOMAIN].pop(entry.entry_id)
 
-    return unload_ok
+    return True
 
 
 class DellDataUpdateCoordinator(DataUpdateCoordinator):

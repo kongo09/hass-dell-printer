@@ -5,7 +5,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 import logging
 
-from .const import DOMAIN, PRINTER_PRINT_VOLUME
+from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_PRINT_VOLUME, PRINTER_SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,29 @@ async def async_setup_entry(hass, entry, async_add_entities):
     return True
 
 
-class PrintVolume(CoordinatorEntity):
+class DellPrinterEntity(CoordinatorEntity):
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        self._serialNumber = coordinator.data[PRINTER_SERIAL_NUMBER]
+        self._modelName = coordinator.data[MODEL_NAME]
+        self._firmware = coordinator.data[FIRMWARE_VERSION]
+        self._name = DEFAULT_NAME
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self._serialNumber)
+            },
+            "name": self._name,
+            "manufacturer": "Dell",
+            "model": self._modelName,
+            "sw_version": self._firmware,
+        }
+
+
+class PrintVolume(DellPrinterEntity):
     """Representation of a sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
@@ -28,12 +50,12 @@ class PrintVolume(CoordinatorEntity):
         self.attrs = {}
         # self._state = coordinator.data[PRINTER_PRINT_VOLUME]
         self._id = "print_volume"
-        self._name = "Print Volume"
-        self._icon = "mdi:file-document-multiple-outline"
-        self._native_unit_of_measurement = "pages"
-        self._state_class = "measurement"
-        self._entity_category = "diagnostic"
+        self.set_name("Print Volume")
+        self._attr_icon = "mdi:file-document-multiple-outline"
+        self._attr_native_unit_of_measurement = "pages"
+        self._attr_state_class = "measurement"
+        self._attr_entity_category = "diagnostic"
         
     @property
-    def native_value(self):
+    def state(self):
         return self.coordinator.data[PRINTER_PRINT_VOLUME]
