@@ -2,14 +2,13 @@ from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType, HomeAssistantType
+from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.config_entries import ConfigEntry
 
 import logging
 
-from .const import ATTR_PAPER_USED_B5, ATTR_PAPER_USED_LETTER, DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PAPER_USED_B5, PAPER_USED_LETTER, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS
+from .const import ADF_COVER_STATUS, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, OUTPUT_TRAY_CAPACITY, OUTPUT_TRAY_STATUS, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +25,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     entities.append(PrintVolume(coordinator))
     entities.append(RearCoverStatus(coordinator))
     entities.append(AdfCoverStatus(coordinator))
+    entities.append(OutputTrayStatus(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
@@ -85,28 +85,23 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        _LOGGER.debug(f"extra_state_attributes called")
-        _LOGGER.debug(f"raw: {self.coordinator.data.items()}")
         self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("paper_")}
         _LOGGER.debug(f"extra_state_attributes: {self.attrs}")
-        # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
-        # self.attrs[PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
         return self.attrs
 
 
-class CoverStatus(DellPrinterEntity, BinarySensorEntity):
+class Status(DellPrinterEntity, BinarySensorEntity):
     """Representation of a cover sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
         self._attr_entity_category = "diagnostic"
         self._attr_device_class = "opening"
-        self.attrs: Dict[str, Any]
 
-    def init_name(self, cover: str) -> None:
-        self.lower_name = cover.lower().replace(" ", "_")
+    def init_name(self, name: str) -> None:
+        self.lower_name = name.lower().replace(" ", "_")
         self._id = DOMAIN + "_" + self.lower_name
-        self._attr_name = DOMAIN + " " + cover
+        self._attr_name = name
 
     @property
     def unique_id(self) -> str:
@@ -122,8 +117,8 @@ class CoverStatus(DellPrinterEntity, BinarySensorEntity):
             return "mdi:tray"
 
 
-class RearCoverStatus(CoverStatus, BinarySensorEntity):
-    """Representation of a sensor."""
+class RearCoverStatus(Status, BinarySensorEntity):
+    """Representation of a rear cover sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
@@ -131,12 +126,15 @@ class RearCoverStatus(CoverStatus, BinarySensorEntity):
         
     @property
     def is_on(self) -> bool:
-        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
-        return is_on
+        return self.coordinator.data[REAR_COVER_STATUS] == "Open"
+
+    @property
+    def state(self) -> str:
+        return self.coordinator.data[REAR_COVER_STATUS]
 
 
-class AdfCoverStatus(CoverStatus, BinarySensorEntity):
-    """Representation of a sensor."""
+class AdfCoverStatus(Status, BinarySensorEntity):
+    """Representation of a ADF sensor."""
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
@@ -144,6 +142,30 @@ class AdfCoverStatus(CoverStatus, BinarySensorEntity):
         
     @property
     def is_on(self) -> bool:
-        is_on = self.coordinator.data[REAR_COVER_STATUS] == "Closed"
-        return is_on
+        return self.coordinator.data[ADF_COVER_STATUS] == "Open"
+
+    @property
+    def state(self) -> str:
+        return self.coordinator.data[ADF_COVER_STATUS]
+
+
+class OutputTrayStatus(Status, BinarySensorEntity):
+    """Representation of an output tray sensor."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        self.init_name("Output Tray")
+        
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.data[OUTPUT_TRAY_STATUS] != "OK"
+
+    @property
+    def state(self) -> str:
+        return self.coordinator.data[OUTPUT_TRAY_STATUS]
+
+    @property
+    def extra_state_attributes(self) -> Dict[str, Any]:
+        self.attrs = {OUTPUT_TRAY_CAPACITY: self.coordinator.data[OUTPUT_TRAY_CAPACITY]}
+        return self.attrs
 
