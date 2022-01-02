@@ -37,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     return True
 
 
-class DellPrinterEntity(CoordinatorEntity):
+class DellPrinterEntity(CoordinatorEntity, SensorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
