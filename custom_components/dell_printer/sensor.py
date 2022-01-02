@@ -5,7 +5,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 import logging
 
-from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_PRINT_VOLUME, PRINTER_SERIAL_NUMBER
+from .const import DEFAULT_NAME, DOMAIN, FIRMWARE_VERSION, MODEL_NAME, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,4 +58,4 @@ class PrintVolume(DellPrinterEntity):
         
     @property
     def state(self):
-        return self.coordinator.data[PRINTER_PRINT_VOLUME]
+        return self.coordinator.data[PRINTER_PAGE_COUNT]
