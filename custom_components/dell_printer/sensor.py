@@ -87,7 +87,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
     def extra_state_attributes(self) -> Dict[str, Any]:
         _LOGGER.debug(f"extra_state_attributes called")
         _LOGGER.debug(f"raw: {self.coordinator.data.items()}")
-        self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("PAPER_")}
+        self.attrs = {paper: used for paper, used in self.coordinator.data.items() if paper.startswith("paper_")}
         _LOGGER.debug(f"extra_state_attributes: {self.attrs}")
         # self.attrs[PAPER_USED_LETTER] = self.coordinator.data[PAPER_USED_LETTER]
         # self.attrs[PAPER_USED_B5] = self.coordinator.data[PAPER_USED_B5]
