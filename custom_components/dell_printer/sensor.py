@@ -31,6 +31,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     entities.append(MagentaStatus(coordinator))
     entities.append(YellowStatus(coordinator))
     entities.append(BlackStatus(coordinator))
+    entities.append(PrinterInfo(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
@@ -71,7 +72,7 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
         super().__init__(coordinator)
         # self._id = DOMAIN + "_info"
         self._attr_unique_id = self._serialNumber + "_info"
-        self._attr_name = self._modelName
+        self._attr_name = DOMAIN + " " + self._modelName
         self._attr_state_class = "measurement"
         self._attr_entity_category = "diagnostic"
 
@@ -109,7 +110,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
         super().__init__(coordinator)
         self._id = DOMAIN + "_print_volume"
         self._attr_unique_id = self._serialNumber + "_print_volume"
-        self._attr_name = "Print Volume"
+        self._attr_name = DOMAIN + " Print Volume"
         self._attr_icon = "mdi:tray-full"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
@@ -139,7 +140,7 @@ class TonerStatus(DellPrinterEntity, SensorEntity):
         self.lower_name = name.lower().replace(" ", "_")
         self._id = DOMAIN + "_" + self.lower_name
         self._attr_unique_id = self._serialNumber + "_" + self.lower_name          
-        self._attr_name = name
+        self._attr_name = DOMAIN + " " + name
 
     @property
     def icon(self) -> str:
@@ -206,7 +207,7 @@ class Status(DellPrinterEntity, BinarySensorEntity):
         self.lower_name = name.lower().replace(" ", "_")
         self._id = DOMAIN + "_" + self.lower_name
         self._attr_unique_id = self._serialNumber + "_" + self.lower_name
-        self._attr_name = name
+        self._attr_name = DOMAIN + " " + name
 
     @property
     def icon(self) -> str:
