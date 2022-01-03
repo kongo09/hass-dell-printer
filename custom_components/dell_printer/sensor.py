@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 
 import logging
 
-from .const import ADF_COVER_STATUS, BLACK_LEVEL, CYAN_LEVEL, DOMAIN, FIRMWARE_VERSION, MAGENTA_LEVEL, MODEL_NAME, MULTI_PURPOSE_FEEDER_CAPACITY, MULTI_PURPOSE_FEEDER_SIZE, MULTI_PURPOSE_FEEDER_STATUS, OUTPUT_TRAY_CAPACITY, OUTPUT_TRAY_STATUS, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, REAR_COVER_STATUS, YELLOW_LEVEL
+from .const import ADF_COVER_STATUS, ASSET_TAG_NUMBER, BLACK_LEVEL, CYAN_LEVEL, DELL_SERVICE_TAG_NUMBER, DOMAIN, FIRMWARE_VERSION, MAGENTA_LEVEL, MEMORY_CAPACITY, MODEL_NAME, MULTI_PURPOSE_FEEDER_CAPACITY, MULTI_PURPOSE_FEEDER_SIZE, MULTI_PURPOSE_FEEDER_STATUS, NETWORK_FIRMWARE_VERSION, OUTPUT_TRAY_CAPACITY, OUTPUT_TRAY_STATUS, PRINTER_PAGE_COUNT, PRINTER_SERIAL_NUMBER, PRINTER_TYPE, PRINTING_SPEED, PROCESSOR_SPEED, REAR_COVER_STATUS, YELLOW_LEVEL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +64,44 @@ class DellPrinterEntity(CoordinatorEntity):
         return self._available
 
 
+class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
+    """Representation of the printer."""
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        # self._id = DOMAIN + "_info"
+        self._attr_unique_id = self._serialNumber + "_info"
+        self._attr_name = self._modelName
+        self._attr_state_class = "measurement"
+        self._attr_entity_category = "diagnostic"
+
+    @property
+    def is_on(self) -> bool:
+        return False
+
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.is_on:
+            return "mdi:printer-alert"
+        else:
+            return "mdi:printer"
+
+    @property
+    def extra_state_attributes(self) -> Dict[str, Any]:
+        return {
+            DELL_SERVICE_TAG_NUMBER: self.coordinator.data[DELL_SERVICE_TAG_NUMBER],
+            ASSET_TAG_NUMBER: self.coordinator.data[ASSET_TAG_NUMBER],
+            PRINTER_SERIAL_NUMBER: self.coordinator.data[PRINTER_SERIAL_NUMBER],
+            MEMORY_CAPACITY: self.coordinator.data[MEMORY_CAPACITY],
+            PROCESSOR_SPEED: self.coordinator.data[PROCESSOR_SPEED],
+            FIRMWARE_VERSION: self.coordinator.data[FIRMWARE_VERSION],
+            NETWORK_FIRMWARE_VERSION: self.coordinator.data[NETWORK_FIRMWARE_VERSION],
+            PRINTER_TYPE: self.coordinator.data[PRINTER_TYPE],
+            PRINTING_SPEED: self.coordinator.data[PRINTING_SPEED]
+        }
+
+
 class PrintVolume(DellPrinterEntity, SensorEntity):
     """Representation of a sensor."""
 
@@ -72,7 +110,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
         self._id = DOMAIN + "_print_volume"
         self._attr_unique_id = self._serialNumber + "_print_volume"
         self._attr_name = "Print Volume"
-        self._attr_icon = "mdi:file-document-multiple-outline"
+        self._attr_icon = "mdi:tray-full"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
         self._attr_entity_category = "diagnostic"
@@ -83,13 +121,11 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any]:
-        attrs = {
+        return {
             paper.removeprefix("paper_used_"): used
             for paper, used in self.coordinator.data.items()
             if paper.startswith("paper_")
         }
-        _LOGGER.debug(f"extra_state_attributes: {attrs}")
-        return attrs
 
 
 class TonerStatus(DellPrinterEntity, SensorEntity):
@@ -231,6 +267,14 @@ class OutputTrayStatus(Status):
             "capacity": self.coordinator.data[OUTPUT_TRAY_CAPACITY]
         }
         return self.attrs
+    
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.is_on:
+            return "mdi:tray-alert"
+        else:
+            return "mdi:tray-arrow-up"
 
 
 class PaperTrayStatus(Status):
@@ -255,3 +299,10 @@ class PaperTrayStatus(Status):
         }
         return self.attrs
 
+    @property
+    def icon(self) -> str:
+        """Return icon depending on state."""
+        if self.is_on:
+            return "mdi:tray-alert"
+        else:
+            return "mdi:tray-arrow-down"
