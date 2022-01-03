@@ -1,6 +1,5 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
-Note: this is work in progress. Currently, it doesn't work at all.
 
 ## Support DELL printers in Home Assistant
 
@@ -19,10 +18,10 @@ Note: this is work in progress. Currently, it doesn't work at all.
   
   
 ### Configuration:
+* The printer will be discovered automatically by Home Assistant. If not:
 * Go to Configuration -> Integrations
 * Click `Add Integration`
 * Search for `Dell Printer` and select it
-* The integration will try to automatically discover your printer hostname or IP address
   
   
 ## Usage:
@@ -34,6 +33,15 @@ The integration provides a printer device with several entities to Home Assistan
   
 ### Entities:
 
-| Entity ID                                      | Type        |  Description                                                               |
-|------------------------------------------------|-------------|----------------------------------------------------------------------------|
-| sensor.dell_printer_pages_printed              | Sensor      |  The total number of printed pages of this printer                         |
+| Entity ID                                      | Type               |  Description                                                               |
+|------------------------------------------------|--------------------|----------------------------------------------------------------------------|
+| binary_sensor.dell_printer                     | Binary Sensor      |  The general state of the printer, with informational attributes           |
+| binary_sensor.adf_cover                        | Binary Sensor      |  State of the automatic document feeder cover                              |
+| binary_sensor.rear_cover                       | Binary Sensor      |  State of the rear cover                                                   |
+| binary_sensor.multi_purpose_feeder             | Binary Sensor      |  State of the multi purpose feeder                                         |
+| binary_sensor.output_tray                      | Binary Sensor      |  State of the output tray                                                  |
+| sensor.print_volume                            | Sensor             |  Number of printed pages, with attributes about paper formats              |
+| sensor.cyan                                    | Sensor             |  Remaining level of cyan toner                                             |
+| sensor.magenta                                 | Sensor             |  Remaining level of magenta toner                                          |
+| sensor.yellow                                  | Sensor             |  Remaining level of yellow toner                                           |
+| sensor.black                                   | Sensor             |  Remaining level of black toner                                            |
