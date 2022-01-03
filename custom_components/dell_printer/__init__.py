@@ -12,7 +12,7 @@ from homeassistant.const import CONF_HOST, CONF_SCAN_INTERVAL
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, CoordinatorEntity, UpdateFailed
 
 import logging
 
@@ -121,3 +121,31 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
         data[PAPER_USED_OTHERS] = self.printer.printVolume.paperUsedOthers
 
         return data
+
+
+class DellPrinterEntity(CoordinatorEntity):
+
+    def __init__(self, coordinator: DellDataUpdateCoordinator):
+        super().__init__(coordinator)
+        self._serialNumber = coordinator.data[PRINTER_SERIAL_NUMBER]
+        self._modelName = coordinator.data[MODEL_NAME]
+        self._firmware = coordinator.data[FIRMWARE_VERSION]
+        self._name = self._serialNumber
+        self._available = True
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self._serialNumber)
+            },
+            "name": self._name,
+            "model": self._modelName,
+            "manufacturer": "Dell",
+            "sw_version": self._firmware,
+        }
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return self._available

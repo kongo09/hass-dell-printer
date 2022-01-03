@@ -1,5 +1,5 @@
 DOMAIN = "dell_printer"
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "binary_sensor"]
 DATA_CONFIG_ENTRY = "config_entry"
 
 # set polling interval to 30s
