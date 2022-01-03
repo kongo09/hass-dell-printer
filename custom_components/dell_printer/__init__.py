@@ -78,7 +78,6 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             """Ask the library to reload fresh data."""
             await self.printer.load_data()
-            _LOGGER.debug(f"coordinator load_data() called")
         except (ConnectionError) as error:
             raise UpdateFailed(error) from error
 
