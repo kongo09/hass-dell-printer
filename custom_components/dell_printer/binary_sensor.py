@@ -19,7 +19,6 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     entities = []
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
-    _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(RearCoverStatus(coordinator))
     entities.append(AdfCoverStatus(coordinator))
     entities.append(OutputTrayStatus(coordinator))
@@ -43,7 +42,14 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool:
-        return False
+        return "ready" not in self.coordinator.data[EVENT_DETAILS].lower()
+
+    @property
+    def state(self) -> str:
+        if self.is_on:
+            return "ready"
+        else:
+            return "error"
 
     @property
     def icon(self) -> str:
@@ -64,7 +70,9 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
             FIRMWARE_VERSION: self.coordinator.data[FIRMWARE_VERSION],
             NETWORK_FIRMWARE_VERSION: self.coordinator.data[NETWORK_FIRMWARE_VERSION],
             PRINTER_TYPE: self.coordinator.data[PRINTER_TYPE],
-            PRINTING_SPEED: self.coordinator.data[PRINTING_SPEED]
+            PRINTING_SPEED: self.coordinator.data[PRINTING_SPEED],
+            EVENT_LOCATION: self.coordinator.data[EVENT_LOCATION],
+            EVENT_DETAILS: self.coordinator.data[EVENT_DETAILS]
         }
 
 

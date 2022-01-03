@@ -119,6 +119,8 @@ class DellDataUpdateCoordinator(DataUpdateCoordinator):
         data[PAPER_USED_DL] = self.printer.printVolume.paperUsedDL
         data[PAPER_USED_C5] = self.printer.printVolume.paperUsedC5
         data[PAPER_USED_OTHERS] = self.printer.printVolume.paperUsedOthers
+        data[EVENT_LOCATION] = self.printer.events.eventLocation
+        data[EVENT_DETAILS] = self.printer.events.eventDetails
 
         return data
 

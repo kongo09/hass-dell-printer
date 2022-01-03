@@ -19,17 +19,11 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry, async_a
     entities = []
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
-    _LOGGER.debug(f"async_setup_entry in sensor: appending entity")
     entities.append(PrintVolume(coordinator))
-    entities.append(RearCoverStatus(coordinator))
-    entities.append(AdfCoverStatus(coordinator))
-    entities.append(OutputTrayStatus(coordinator))
-    entities.append(PaperTrayStatus(coordinator))
     entities.append(CyanStatus(coordinator))
     entities.append(MagentaStatus(coordinator))
     entities.append(YellowStatus(coordinator))
     entities.append(BlackStatus(coordinator))
-    entities.append(PrinterInfo(coordinator))
     
     async_add_entities(entities, update_before_add=True)
     return True
