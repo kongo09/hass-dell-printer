@@ -46,9 +46,9 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
     @property
     def state(self) -> str:
         if self.is_on:
-            return "ready"
+            return "Error"
         else:
-            return "error"
+            return "Ready"
 
     @property
     def icon(self) -> str:
