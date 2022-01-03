@@ -1,6 +1,6 @@
 {
     "name": "Dell Printer",
     "iot_class": "Local Polling",
-    "domains": ["sensor"],
+    "domains": ["sensor", "binary_sensor"],
     "render_readme": true
 }
