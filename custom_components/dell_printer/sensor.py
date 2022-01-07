@@ -3,7 +3,7 @@ from custom_components.dell_printer import DellDataUpdateCoordinator, DellPrinte
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.config_entries import ConfigEntry
-form homeassistant.util import slugify
+from homeassistant.util import slugify
 
 import logging
 
