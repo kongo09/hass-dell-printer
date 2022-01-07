@@ -35,7 +35,8 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
     def __init__(self, coordinator: DellDataUpdateCoordinator):
         super().__init__(coordinator)
         self._attr_unique_id = self._serialNumber + "_info"
-        self._attr_name = DEFAULT_NAME + " " + self._modelName
+        self._attr_name = self._modelName
+        self.entity_id = DEFAULT_NAME + " " + self._modelName
         self._attr_state_class = "measurement"
         self._attr_entity_category = "diagnostic"
 
@@ -84,7 +85,8 @@ class Status(DellPrinterEntity, BinarySensorEntity):
         self._attr_device_class = "opening"
         self.lower_name = name.lower().replace(" ", "_")
         self._attr_unique_id = self._serialNumber + "_" + self.lower_name
-        self._attr_name = DEFAULT_NAME + " " + name
+        self.entity_id = DEFAULT_NAME + " " + name
+        self._attr_name = name
 
     @property
     def icon(self) -> str:
