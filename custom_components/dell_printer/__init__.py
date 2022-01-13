@@ -4,6 +4,7 @@ from typing import Dict
 from datetime import timedelta
 
 from dell_printer_parser.printer_parser import DellPrinterParser
+from aiohttp.client_exceptions import ClientConnectorError
 
 from .const import *
 
@@ -29,7 +30,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     update_interval = entry.data[CONF_SCAN_INTERVAL]
     session = async_get_clientsession(hass)
     printer = DellPrinterParser(session, host)    
-    await printer.load_data()
+    try:
+        await printer.load_data()
+    except ClientConnectorError as e:
+        _LOGGER.error(f"Cannot load data with error: {e}")
+        return False
 
     # setup a coordinator
     coordinator = DellDataUpdateCoordinator(hass, _LOGGER, printer, timedelta(seconds=update_interval))
