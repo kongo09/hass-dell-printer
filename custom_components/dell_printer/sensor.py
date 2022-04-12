@@ -1,6 +1,7 @@
 from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator, DellPrinterEntity
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.util import slugify
@@ -41,7 +42,7 @@ class PrintVolume(DellPrinterEntity, SensorEntity):
         self._attr_icon = "mdi:tray-full"
         self._attr_native_unit_of_measurement = "pages"
         self._attr_state_class = "measurement"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
         
     @property
     def state(self) -> int:
@@ -61,7 +62,7 @@ class TonerStatus(DellPrinterEntity, SensorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator, name: str):
         super().__init__(coordinator)
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
         self._attr_native_unit_of_measurement = "%"
         self._attr_state_class = "measurement"
         self.lower_name = name.lower().replace(" ", "_")

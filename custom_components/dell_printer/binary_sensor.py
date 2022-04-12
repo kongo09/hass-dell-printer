@@ -1,6 +1,7 @@
 from typing import Callable, Any, Dict
 from custom_components.dell_printer import DellDataUpdateCoordinator, DellPrinterEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.util import slugify
@@ -39,7 +40,7 @@ class PrinterInfo(DellPrinterEntity, BinarySensorEntity):
         self._attr_name = self._modelName
         self.entity_id = "binary_sensor." + slugify(DEFAULT_NAME + " " + self._modelName)
         self._attr_state_class = "measurement"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
     def is_on(self) -> bool:
@@ -82,7 +83,7 @@ class Status(DellPrinterEntity, BinarySensorEntity):
 
     def __init__(self, coordinator: DellDataUpdateCoordinator, name: str):
         super().__init__(coordinator)
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
         self._attr_device_class = "opening"
         self.lower_name = name.lower().replace(" ", "_")
         self._attr_unique_id = self._serialNumber + "_" + self.lower_name
