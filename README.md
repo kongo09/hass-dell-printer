@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 
 ## Support DELL printers in Home Assistant
@@ -11,9 +11,9 @@
 
 ### Installation:
 * Go to HACS -> Integrations
-* Click the three dots on the top right and select `Custom Repositories`
-* Enter `https://github.com/kongo09/hass-dell-printer` as repository, select the category `Integration` and click Add
-* A new custom integration shows up for installation (Dell Printer) - install it
+* Click on `Add Integration`
+* Search for `Dell Printer`
+* Install it
 * Restart Home Assistant
   
   
