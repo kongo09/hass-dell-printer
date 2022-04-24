@@ -11,6 +11,7 @@
       },
       "zeroconf_confirm": {
         "title": "New Dell printer discovered",
+        "description": "{model}"
         "data": {
           "name": "Entry name (optional)",
           "scan_interval": "State polling interval (seconds)"
