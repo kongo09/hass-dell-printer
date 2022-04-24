@@ -199,6 +199,6 @@ class DellPrinterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
             description_placeholders={
                 CONF_HOST: self.host,
-                "model": self.printer.information.modelName
+                "model": name
             }
         )
