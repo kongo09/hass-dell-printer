@@ -1,0 +1,35 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Aggiungi una nuova stampante Dell",
+          "data": {
+            "name": "Nome entità (facoltativo)",
+            "host": "Nome host della stampante o indirizzo IP",
+            "scan_interval": "Intervallo di polling dello stato (secondi)"
+          }
+        },
+        "zeroconf_confirm": {
+          "title": "Trovata una nuova stampante Dell",
+          "description": "{model}",
+          "data": {
+            "name": "Nome entità (facoltativo)",
+            "scan_interval": "Intervallo di polling dello stato (secondi)"
+          }
+        }
+      },
+      "error": {
+        "no_printer_url": "L'indirizzo della stampante è obbligatorio"
+      }
+    },
+    "options": {
+      "step": {
+        "options": {
+          "title": "Configura la stampante Dell",
+          "data": {
+            "scan_interval": "Intervallo di polling dello stato (secondi)"
+          }
+        }
+      }
+    }
+  }
