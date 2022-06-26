@@ -1,5 +1,4 @@
 {
     "name": "Dell Printer",
-    "domains": ["sensor", "binary_sensor"],
     "render_readme": true
 }
